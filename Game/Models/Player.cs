@@ -52,6 +52,19 @@ public sealed class Player : INotifyPropertyChanged
             OnPropertyChanged();
         }
     }
+    
+    private List<PlayCard>? _cards;
+
+    public List<PlayCard>? Cards
+    {
+        get => _cards;
+        set
+        {
+            _cards = value; ;
+            OnPropertyChanged();
+        }
+    }
+    
 
     private bool _turn;
 
@@ -79,7 +92,7 @@ public sealed class Player : INotifyPropertyChanged
 
     public Player()
     {
-        
+        //TODO Give cards to Player
     }
 
     private ObservableCollection<Player>? _playersList;

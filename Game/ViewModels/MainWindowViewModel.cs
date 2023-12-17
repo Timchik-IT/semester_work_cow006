@@ -15,6 +15,7 @@ public class MainWindowViewModel : ViewModelBase
         Initialize();
         Player = new Player();
         ConnectCommand = ReactiveCommand.Create(Connect);
+        EndTurnCommand = ReactiveCommand.Create(EndTurn);
     }
 
     private void Initialize()
@@ -41,5 +42,10 @@ public class MainWindowViewModel : ViewModelBase
 
     public ReactiveCommand<Unit, Unit> ConnectCommand { get; }
     
+    public ReactiveCommand<Unit, Unit> EndTurnCommand { get; }
+    
     private void Connect() => Task.Run(() => Player.ConnectAsync());
+    
+    private void EndTurn() => Player.EndTurn();
+
 }

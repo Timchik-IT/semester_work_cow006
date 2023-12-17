@@ -6,10 +6,10 @@ public static class XPacketTypeManager
 
     static XPacketTypeManager()
     {
-        RegisterType(XPacketType.NewPlayer, 1, 0);
-        RegisterType(XPacketType.NewMove, 2, 0);
-        RegisterType(XPacketType.Connection, 3, 0);
-        RegisterType(XPacketType.Players, 4, 0);
+        RegisterType(XPacketType.Connection, 1, 0);
+        RegisterType(XPacketType.NewPlayer, 2, 0);
+        RegisterType(XPacketType.Players, 3, 0);
+        RegisterType(XPacketType.NewMove, 4, 0);
         RegisterType(XPacketType.Points, 5, 0);
     }
 

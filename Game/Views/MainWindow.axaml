@@ -76,7 +76,52 @@
         </Border>
         
         <Grid RowDefinitions="1*,17*" x:Name="GameGrid" IsVisible="False">
-             
+            <Grid Grid.Row="0" Background="Gray" VerticalAlignment="Top" Height="45">
+                <ListBox ItemsSource="{Binding Player.PlayersList}"
+                         x:Name="PlayersListBox"
+                         HorizontalAlignment="Left"
+                         VerticalAlignment="Stretch"
+                         Background="Gray">
+                    <ListBox.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <StackPanel Orientation="Horizontal" />
+                        </ItemsPanelTemplate>
+                    </ListBox.ItemsPanel>
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Stretch">
+                                <Ellipse Fill="{Binding ColorString}" Width="10" Height="10" Margin="10 0 10 0"
+                                         HorizontalAlignment="Center" VerticalAlignment="Center">
+                                </Ellipse>
+                                <TextBlock Text="{Binding Name}" HorizontalAlignment="Center" Foreground="White"
+                                           VerticalAlignment="Center" FontSize="16">
+                                </TextBlock>
+                            </StackPanel>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+                <Button x:Name="EndMoveButton" Command="{Binding EndTurnCommand}" IsEnabled="{Binding Player.Turn}"
+                        HorizontalAlignment="Right"
+                        VerticalAlignment="Center"
+                        Background="#9B1212"
+                        Foreground="White"
+                        Margin="0 0 15 0"
+                        Content="Закончить ход" />
+            </Grid>
+            <Grid Grid.Row="1">
+                <Grid x:Name="FirstPlayer">
+                    
+                </Grid>
+                <Grid x:Name="SecondPlayer">
+                    
+                </Grid>
+                <Grid x:Name="ThirdPlayer">
+                    
+                </Grid>
+                <Grid x:Name="FourthPlayer">
+                    
+                </Grid>
+            </Grid>
         </Grid>
     </Grid>
 </Window>

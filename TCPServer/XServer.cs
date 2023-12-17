@@ -25,7 +25,7 @@ internal class XServer
             if (_listening)
                 throw new Exception("Server is already listening requests..");
             
-            _socket.Bind(new IPEndPoint(IPAddress.Any, 9218));
+            _socket.Bind(new IPEndPoint(IPAddress.Any, 1410)); // "127.0.0.1", 1410
             _socket.Listen(10);
 
             _listening = true;
