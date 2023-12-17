@@ -14,8 +14,11 @@ internal class XServer
     private bool _isGameOver;
 
     private static Stack<byte> _cards = new();
+    private readonly Random _random = new();
+    
+    private int _activePlayerId;
 
-    public Task StartGame()
+    public Task StartAsync()
     {
         try
         {
@@ -55,11 +58,76 @@ internal class XServer
         Console.WriteLine("Server has been closed.");
     }
     
+    public void AcceptClients()
+    {
+        while (true)
+        {
+            if (_stopListening)
+                return;
+
+            if (Clients.Count < 4)
+            {
+                Socket client;
+
+                try
+                {
+                    client = _socket.Accept();
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e);
+                    Thread.Sleep(10000);
+                    continue;
+                }
+
+                Console.WriteLine($"[!] Accepted client from {(IPEndPoint)client.RemoteEndPoint!}");
+
+                var c = new ConnectedClient(client, (byte)Clients.Count);
+
+                Clients.Add(c);
+            }
+
+
+            if (Clients.All(x => x.IsReady) && Clients.Count == 4)
+                break;
+        }
+    }
     
-    
-    
-    
-    
-    
-    
+    private void InitializeGame()
+    {
+        var cards = new List<byte>();
+        for (byte id = 0; id < 104; id++) 
+            cards.Add(id);
+        cards = cards.OrderBy(x => _random.Next()).ToList();
+        foreach (var card in cards)
+            _cards.Push(card);
+    }
+
+    public Task StartGameAsync()
+    {
+        InitializeGame();
+
+        foreach (var client in Clients)
+        {
+            //TODO Init Players 
+        }
+
+        _isGameOver = false;
+        
+        while (!_isGameOver)
+        {
+            var activePlayer = Clients[_activePlayerId % 4];
+            activePlayer.SendNextMove();
+            while (true)
+            {
+                if (!activePlayer.Turn)
+                    break;
+            }
+
+            Console.WriteLine($"Player {activePlayer.GetName()} has finished his turn");
+            _activePlayerId += 1;
+        }
+
+        return Task.CompletedTask;
+    }
 }

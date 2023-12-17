@@ -1,8 +1,15 @@
 {
   "version": 2,
-  "dgSpecHash": "99BDJLBMyP3RF0S0ZtBLoY3t74fXTvzskZRBYgtJ0eiFlU1Y/tlE2t3BoZjYgEnFOxdw5lphLjm8hDCIA012TA==",
+  "dgSpecHash": "kp2DX0FdLMfLXmL3BIVwcdO0hJY2ErqMUbYJ8mPT619/LhMJIBNY8y7YO96l1FQsVHRfHua9geBrSXq6VHZ3MA==",
   "success": true,
   "projectFilePath": "D:\\Git\\semester_work_cow006\\TCPServer\\TCPServer.csproj",
-  "expectedPackageFiles": [],
+  "expectedPackageFiles": [
+    "C:\\Users\\Timur\\.nuget\\packages\\avalonia\\11.0.6\\avalonia.11.0.6.nupkg.sha512",
+    "C:\\Users\\Timur\\.nuget\\packages\\avalonia.buildservices\\0.0.29\\avalonia.buildservices.0.0.29.nupkg.sha512",
+    "C:\\Users\\Timur\\.nuget\\packages\\avalonia.remote.protocol\\11.0.6\\avalonia.remote.protocol.11.0.6.nupkg.sha512",
+    "C:\\Users\\Timur\\.nuget\\packages\\microcom.runtime\\0.11.0\\microcom.runtime.0.11.0.nupkg.sha512",
+    "C:\\Users\\Timur\\.nuget\\packages\\newtonsoft.json\\13.0.3\\newtonsoft.json.13.0.3.nupkg.sha512",
+    "C:\\Users\\Timur\\.nuget\\packages\\system.componentmodel.annotations\\4.5.0\\system.componentmodel.annotations.4.5.0.nupkg.sha512"
+  ],
   "logs": []
 }
