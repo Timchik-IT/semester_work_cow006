@@ -1,0 +1,38 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:Game.ViewModels"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        x:Class="Game.Views.MainWindow"
+        x:DataType="vm:MainWindowViewModel"
+        Icon="/Assets/game_icon.ico"
+        Title="Cow 006">
+
+    <Window.Background>
+        <ImageBrush Source="/Assets/startup-background.jpg" Stretch="Fill" />
+    </Window.Background>
+    
+    <Grid>
+        <TextBlock Text="{Binding Greeting}" HorizontalAlignment="Center" VerticalAlignment="Top"/>
+        
+        <Grid x:Name="GreetingPage" IsVisible="True">
+            <TextBlock Text="{Binding Greeting}"
+                       TextAlignment="Center"
+                       HorizontalAlignment="Center"
+                       VerticalAlignment="Top"
+                       FontSize="40"
+                       Foreground="Wheat"
+                       Margin="65"
+                       FontWeight="Bold"
+                       Background="#B4FF6800"
+                       MaxWidth="10000"
+                       Width="10000" />
+            <Button x:Name="Continue" Content="Продолжить" Classes="OnBackgroundImage" VerticalAlignment="Bottom"
+                    Margin="100"
+                    Click="OpenMainMenu_OnClick">
+            </Button>
+        </Grid>
+        
+    </Grid>
+</Window>
