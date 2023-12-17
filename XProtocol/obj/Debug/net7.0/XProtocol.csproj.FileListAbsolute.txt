@@ -1,0 +1,12 @@
+D:\Git\semester_work_cow006\XProtocol\bin\Debug\net7.0\XProtocol.deps.json
+D:\Git\semester_work_cow006\XProtocol\bin\Debug\net7.0\XProtocol.dll
+D:\Git\semester_work_cow006\XProtocol\bin\Debug\net7.0\XProtocol.pdb
+D:\Git\semester_work_cow006\XProtocol\obj\Debug\net7.0\XProtocol.csproj.AssemblyReference.cache
+D:\Git\semester_work_cow006\XProtocol\obj\Debug\net7.0\XProtocol.GeneratedMSBuildEditorConfig.editorconfig
+D:\Git\semester_work_cow006\XProtocol\obj\Debug\net7.0\XProtocol.AssemblyInfoInputs.cache
+D:\Git\semester_work_cow006\XProtocol\obj\Debug\net7.0\XProtocol.AssemblyInfo.cs
+D:\Git\semester_work_cow006\XProtocol\obj\Debug\net7.0\XProtocol.csproj.CoreCompileInputs.cache
+D:\Git\semester_work_cow006\XProtocol\obj\Debug\net7.0\XProtocol.dll
+D:\Git\semester_work_cow006\XProtocol\obj\Debug\net7.0\refint\XProtocol.dll
+D:\Git\semester_work_cow006\XProtocol\obj\Debug\net7.0\XProtocol.pdb
+D:\Git\semester_work_cow006\XProtocol\obj\Debug\net7.0\ref\XProtocol.dll

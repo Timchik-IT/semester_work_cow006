@@ -8,10 +8,6 @@
         x:DataType="vm:MainWindowViewModel"
         Icon="/Assets/game_icon.ico"
         Title="Cow 006">
-
-    <Window.Background>
-        <ImageBrush Source="/Assets/startup-background.jpg" Stretch="Fill" />
-    </Window.Background>
     
     <Grid>
         <TextBlock Text="{Binding Greeting}" HorizontalAlignment="Center" VerticalAlignment="Top"/>
@@ -34,5 +30,53 @@
             </Button>
         </Grid>
         
+        <Grid x:Name="MainMenuPage" IsVisible="False">
+            <StackPanel VerticalAlignment="Center">
+                <Button x:Name="StartButton"
+                        Content="Начать"
+                        Classes="OnBackgroundImage"
+                        Click="StartButton_OnClick" />
+                <Button x:Name="RulesButton"
+                        Content="Правила"
+                        Classes="OnBackgroundImage"
+                        Click="Rules_OnClick" />
+                <Button x:Name="ExitButton"
+                        Content="Выйти"
+                        Classes="OnBackgroundImage"
+                        Click="CloseWindow_OnClick" />
+            </StackPanel>
+        </Grid>
+        
+        <Grid x:Name="RulesPage" IsVisible="False">
+            <ListBox Name="ListBoxRules" ItemsSource="{Binding RuleImages}">
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <Image Source="{Binding Bitmap}" Margin="-15" />
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+            <Button
+                Content="Назад"
+                Classes="OnBackgroundImage"
+                VerticalAlignment="Top"
+                HorizontalAlignment="Left"
+                Click="OpenMainMenu_OnClick" />
+        </Grid>
+        
+        <Border CornerRadius="20" x:Name="NickInput" IsVisible="False" HorizontalAlignment="Center"
+                VerticalAlignment="Center" Background="#E64E4E4E" Width="350">
+            <StackPanel>
+                <TextBlock Margin="20 15" Text="Nickname:" Foreground="White" />
+                <TextBox Watermark="Введите свой никнейм" Margin="10" x:Name="Nickname" Text="{Binding Player.Name}" />
+                <Border>
+                    <Button Content="Подключиться" Classes="OnBackgroundImage" Click="PlayerJoin_OnClick"
+                            Command="{Binding ConnectCommand}" />
+                </Border>
+            </StackPanel>
+        </Border>
+        
+        <Grid RowDefinitions="1*,17*" x:Name="GameGrid" IsVisible="False">
+             
+        </Grid>
     </Grid>
 </Window>
