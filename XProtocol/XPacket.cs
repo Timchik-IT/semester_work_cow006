@@ -8,7 +8,7 @@ public class XPacket
     public byte PacketType { get; private init; }
     public byte PacketSubtype { get; private init; }
     private List<XPacketField> Fields { get; } = new();
-    private static bool ChangeHeaders { get; set; }
+    public bool ChangeHeaders { get; set; }
 
     private XPacket()
     {
@@ -113,12 +113,11 @@ public class XPacket
         {
             if (fields.Length == 2)
                 return xPacket;
-            
+
             var id = fields[0];
             var size = fields[1];
 
-            var contents = size != 0 ?
-                fields.Skip(2).Take(size).ToArray() : null;
+            var contents = size != 0 ? fields.Skip(2).Take(size).ToArray() : null;
 
             xPacket.Fields.Add(new XPacketField
             {

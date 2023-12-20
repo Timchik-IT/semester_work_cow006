@@ -10,10 +10,8 @@
         Title="Cow 006">
     
     <Grid>
-        <TextBlock Text="{Binding Greeting}" HorizontalAlignment="Center" VerticalAlignment="Top"/>
-        
         <Grid x:Name="GreetingPage" IsVisible="True">
-            <TextBlock Text="{Binding Greeting}"
+            <TextBlock Text="Welcome to cow006"
                        TextAlignment="Center"
                        HorizontalAlignment="Center"
                        VerticalAlignment="Top"
@@ -51,13 +49,12 @@
             <ListBox Name="ListBoxRules" ItemsSource="{Binding RuleImages}">
                 <ListBox.ItemTemplate>
                     <DataTemplate>
-                        <Image Source="{Binding Bitmap}" Margin="-15" />
+                        <Image Source="{Binding }" Margin="-15" />
                     </DataTemplate>
                 </ListBox.ItemTemplate>
             </ListBox>
             <Button
                 Content="Назад"
-                Classes="OnBackgroundImage"
                 VerticalAlignment="Top"
                 HorizontalAlignment="Left"
                 Click="OpenMainMenu_OnClick" />
@@ -75,13 +72,15 @@
             </StackPanel>
         </Border>
         
-        <Grid RowDefinitions="1*,17*" x:Name="GameGrid" IsVisible="False">
-            <Grid Grid.Row="0" Background="Gray" VerticalAlignment="Top" Height="45">
+        <Grid RowDefinitions="Auto,17*" x:Name="GameGrid" IsVisible="False" VerticalAlignment="Stretch">
+            <Grid Grid.Row="0" VerticalAlignment="Top" Background="Gray">
                 <ListBox ItemsSource="{Binding Player.PlayersList}"
                          x:Name="PlayersListBox"
                          HorizontalAlignment="Left"
                          VerticalAlignment="Stretch"
-                         Background="Gray">
+                         Background="Gray"
+                         MinHeight="45"
+                         Height="{Binding $parent[Grid].Height}">
                     <ListBox.ItemsPanel>
                         <ItemsPanelTemplate>
                             <StackPanel Orientation="Horizontal" />
@@ -96,6 +95,9 @@
                                 <TextBlock Text="{Binding Name}" HorizontalAlignment="Center" Foreground="White"
                                            VerticalAlignment="Center" FontSize="16">
                                 </TextBlock>
+                                <TextBlock Text="{Binding Points}" HorizontalAlignment="Center" Foreground="White"
+                                           VerticalAlignment="Center" FontSize="16" Margin="10 0 10 0">
+                                </TextBlock>
                             </StackPanel>
                         </DataTemplate>
                     </ListBox.ItemTemplate>
@@ -108,18 +110,76 @@
                         Margin="0 0 15 0"
                         Content="Закончить ход" />
             </Grid>
-            <Grid Grid.Row="1">
-                <Grid x:Name="FirstPlayer">
-                    
+            <Grid Grid.Row="1" ColumnDefinitions="1*,16*,1*" VerticalAlignment="Stretch">
+                <Grid Grid.Column="0" Background="Gray">
+                    <StackPanel>
+                        <TextBlock Text="{Binding Player.Id}" />
+                        <TextBlock Text="{Binding Player.Name}" />
+                        <TextBlock Text="{Binding Player.Points}" />
+                    </StackPanel>
                 </Grid>
-                <Grid x:Name="SecondPlayer">
-                    
+                <Grid Grid.Column="1" Background="White">
+                    <Grid ColumnDefinitions="1*,2*,1*" RowDefinitions="1*,2*,1*">
+                        <Grid Grid.Row="0" Grid.Column="1">
+                            <StackPanel Background="DarkGray">
+                                <Ellipse Fill="{Binding Player.PlayersList[0].ColorString}" Width="10" Height="10"
+                                         Margin="10 10 10 10"
+                                         HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                <TextBlock Text="{Binding Player.PlayersList[0].Name}" HorizontalAlignment="Center"
+                                           Foreground="Black" />
+                                <TextBlock Text="{Binding Player.PlayersList[0].Points}" HorizontalAlignment="Center"
+                                           Foreground="Black" />
+                            </StackPanel>
+                        </Grid>
+
+                        <Grid Grid.Row="1" Grid.Column="0">
+                            <StackPanel Background="DarkGray">
+                                <Ellipse Fill="{Binding Player.PlayersList[1].ColorString}" Width="10" Height="10"
+                                         Margin="10 10 10 10"
+                                         HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                <TextBlock Text="{Binding Player.PlayersList[1].Name}" HorizontalAlignment="Center"
+                                           Foreground="Black" />
+                                <TextBlock Text="{Binding Player.PlayersList[1].Points}" HorizontalAlignment="Center"
+                                           Foreground="Black" />
+                            </StackPanel>
+                        </Grid>
+
+                        <Grid Grid.Row="1" Grid.Column="1">
+                            <StackPanel Background="BurlyWood">
+                                <TextBlock Text="Deck"
+                                           HorizontalAlignment="Center" Foreground="Black">
+                                </TextBlock>
+                            </StackPanel>
+                        </Grid>
+
+                        <Grid Grid.Row="1" Grid.Column="2">
+                            <StackPanel Background="DarkGray">
+                                <Ellipse Fill="{Binding Player.PlayersList[3].ColorString}" Width="10" Height="10"
+                                         Margin="10 10 10 10"
+                                         HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                <TextBlock Text="{Binding Player.PlayersList[3].Name}" HorizontalAlignment="Center"
+                                           Foreground="Black" />
+                                <TextBlock Text="{Binding Player.PlayersList[3].Points}" HorizontalAlignment="Center"
+                                           Foreground="Black" />
+                            </StackPanel>
+                        </Grid>
+
+                        <Grid Grid.Row="2" Grid.Column="1">
+                            <StackPanel Background="DarkGray">
+                                <Ellipse Fill="{Binding Player.PlayersList[2].ColorString}" Width="10" Height="10"
+                                         Margin="10 10 10 10"
+                                         HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                <TextBlock Text="{Binding Player.PlayersList[2].Name}" HorizontalAlignment="Center"
+                                           Foreground="Black" />
+                                <TextBlock Text="{Binding Player.PlayersList[2].Points}" HorizontalAlignment="Center"
+                                           Foreground="Black" />
+                            </StackPanel>
+                        </Grid>
+                    </Grid>
                 </Grid>
-                <Grid x:Name="ThirdPlayer">
-                    
-                </Grid>
-                <Grid x:Name="FourthPlayer">
-                    
+
+                <Grid Grid.Column="2" Background="Gray">
+
                 </Grid>
             </Grid>
         </Grid>

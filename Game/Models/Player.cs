@@ -17,7 +17,12 @@ namespace Game.Models;
 
 public sealed class Player : INotifyPropertyChanged
 {
+    private readonly Dictionary<byte, PlayCard> _playCards = new();
+    
     private byte _id;
+    private string _name;
+    private string _colorString;
+
     
     public byte Id
     {
@@ -29,9 +34,8 @@ public sealed class Player : INotifyPropertyChanged
         }
     }
 
-    private string? _name;
 
-    public string? Name
+    public string Name
     {
         get => _name;
         set
@@ -41,7 +45,6 @@ public sealed class Player : INotifyPropertyChanged
         }
     }
 
-    private string? _colorString;
 
     public string? ColorString
     {
@@ -52,19 +55,30 @@ public sealed class Player : INotifyPropertyChanged
             OnPropertyChanged();
         }
     }
-    
-    private List<PlayCard>? _cards;
 
-    public List<PlayCard>? Cards
+    private bool _playerReady;
+
+    public bool PlayerReady
     {
-        get => _cards;
+        get => _playerReady;
         set
         {
-            _cards = value; ;
+            _playerReady = value;
             OnPropertyChanged();
         }
     }
-    
+
+    private byte _points;
+
+    public byte Points
+    {
+        get => _points;
+        set
+        {
+            _points = Points;
+            OnPropertyChanged();
+        }
+    }
 
     private bool _turn;
 
@@ -77,22 +91,40 @@ public sealed class Player : INotifyPropertyChanged
             OnPropertyChanged();
         }
     }
+    
+    private readonly List<PlayCard> _cards = null!;
+
+    public List<PlayCard> Cards
+    {
+        get => _cards;
+        init
+        {
+            _cards = value;
+            OnPropertyChanged();
+        }
+    }
 
     public event PropertyChangedEventHandler? PropertyChanged;
 
     private void OnPropertyChanged([CallerMemberName] string? propertyName = null)
         => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
 
-    private Player(byte id, string? name, uint rgb)
+    private Player(byte id, string name, string colorString)
     {
         Id = id;
         Name = name;
-        ColorString = Color.FromUInt32(rgb).ToString();
+        ColorString = colorString;
+        Cards = new List<PlayCard>();
     }
-
+    
+    private Player(byte id) => Id = id;
+    
     public Player()
     {
-        //TODO Give cards to Player
+        PlayersList = new ObservableCollection<Player> { new(0), new(1), new(2), new(3) };
+        Cards = new List<PlayCard>();
+
+        _playCards = CardsGenerator.GenerateListOfPlayCards();;
     }
 
     private ObservableCollection<Player>? _playersList;
@@ -113,12 +145,11 @@ public sealed class Player : INotifyPropertyChanged
     private Socket? _socket;
     private IPEndPoint? _serverEndPoint;
 
-    internal Task ConnectAsync()
+    internal void Connect()
     {
         try
         {
-            ConnectAsync("127.0.0.1", 1410);
-
+            Connect("127.0.0.1", 1410);
 
             QueuePacketSend(XPacketConverter.Serialize(XPacketType.Connection,
                 new XPacketConnection
@@ -126,13 +157,10 @@ public sealed class Player : INotifyPropertyChanged
                     IsSuccessful = false
                 }).ToPacket());
 
-            Thread.Sleep(100);
+            Thread.Sleep(300);
 
-            QueuePacketSend(XPacketConverter.Serialize(XPacketType.NewPlayer, new XPacketNewPlayer
-                {
-                    Name = Name,
-                    Rgb = 0
-                })
+            QueuePacketSend(XPacketConverter.Serialize(XPacketType.UpdatedPlayerProperty,
+                    new XPacketUpdatedPlayerProperty(Id, nameof(Name), Name.GetType(), Name))
                 .ToPacket());
 
             while (true)
@@ -146,34 +174,34 @@ public sealed class Player : INotifyPropertyChanged
         }
     }
 
-    private void ConnectAsync(string ip, int port) => ConnectAsync(new IPEndPoint(IPAddress.Parse(ip), port));
+    private void Connect(string ip, int port) => Connect(new IPEndPoint(IPAddress.Parse(ip), port));
 
-    private async Task ConnectAsync(IPEndPoint? server)
+    private void Connect(IPEndPoint? server)
     {
         _serverEndPoint = server;
 
         _socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-        await _socket.ConnectAsync(_serverEndPoint!);
+        _socket.Connect(_serverEndPoint!);
 
-        Task.Run(ReceivePacketsAsync);
-        Task.Run(SendPacketsAsync);
+        Task.Run(ReceivePackets);
+        Task.Run(SendPackets);
     }
 
-    private async Task ReceivePacketsAsync()
+    private void ReceivePackets()
     {
         while (true)
         {
-            var buff = new byte[1024];
-            await _socket!.ReceiveAsync(buff);
-            
+            var buff = new byte[512];
+            _socket!.Receive(buff);
+
             var decryptedBuff = XProtocolEncryptor.Decrypt(buff);
-            
-            buff = decryptedBuff.TakeWhile((b, i) =>
+
+            var packetBuff = decryptedBuff.TakeWhile((b, i) =>
             {
                 if (b != 0xFF) return true;
                 return decryptedBuff[i + 1] != 0;
             }).Concat(new byte[] { 0xFF, 0 }).ToArray();
-            var parsed = XPacket.Parse(buff);
+            var parsed = XPacket.Parse(packetBuff);
 
             if (parsed != null!) ProcessIncomingPacket(parsed);
         }
@@ -188,19 +216,17 @@ public sealed class Player : INotifyPropertyChanged
             case XPacketType.Connection:
                 ProcessConnection(packet);
                 break;
-            case XPacketType.NewPlayer:
-                ProcessCreatingPlayer(packet);
+            case XPacketType.UpdatedPlayerProperty:
+                ProcessUpdatingProperty(packet);
                 break;
-            case XPacketType.Players:
+            case XPacketType.PlayersList:
                 ProcessGettingPlayers(packet);
                 break;
-            /*
-            case XPacketType.BeginCardsSet: 
-                ProcessGettingBeginCardsSet(packet);
+            case XPacketType.Card:
+                ProcessGettingCard(packet);
                 break;
-            */
             case XPacketType.NewMove:
-                ProcessStartingTurn();
+                ProcessStartingTurn(packet);
                 break;
             case XPacketType.Unknown:
                 break;
@@ -209,60 +235,85 @@ public sealed class Player : INotifyPropertyChanged
         }
     }
 
-    private void ProcessStartingTurn()
+    private void ProcessStartingTurn(XPacket packet) 
         => Turn = true;
-
-    // Get beginning cards  
+    
+    private void ProcessGettingCard(XPacket packet)
+    {
+        var packetBeginCardsSet = XPacketConverter.Deserialize<XPacketCard>(packet);
+        Cards.Add(_playCards[packetBeginCardsSet.CardId]);
+        OnPropertyChanged(nameof(Cards));
+    }
 
     private void ProcessGettingPlayers(XPacket packet)
     {
         var packetPlayer = XPacketConverter.Deserialize<XPacketPlayers>(packet);
         var playersFromPacket = packetPlayer.Players;
         var playersList = playersFromPacket!.Select(x => new Player(x.Item1, x.Item2, x.Item3)).ToList();
-        PlayersList = new ObservableCollection<Player>(playersList);
+        foreach (var player in playersList)
+        {
+            PlayersList[player.Id] = playersList[player.Id];
+            OnPropertyChanged(nameof(PlayersList));
+        }
+            
+        playersList[Id] = this;
+        OnPropertyChanged(nameof(PlayersList));
     }
 
     private static void ProcessConnection(XPacket packet)
     {
         var connection = XPacketConverter.Deserialize<XPacketConnection>(packet);
 
-        if (connection.IsSuccessful) Console.WriteLine("Handshake successful!");
+        if (connection.IsSuccessful)
+            Console.WriteLine("Handshake successful!");
     }
 
-    private void ProcessCreatingPlayer(XPacket packet)
+    private void ProcessUpdatingProperty(XPacket packet)
     {
-        var packetPlayer = XPacketConverter.Deserialize<XPacketNewPlayer>(packet);
-        var newColorUint = packetPlayer.Rgb;
-        var color = Color.FromUInt32(newColorUint);
-        ColorString = color.ToString();
+        var packetProperty = XPacketConverter.Deserialize<XPacketUpdatedPlayerProperty>(packet);
 
-        Console.WriteLine($"Your Nickname is {Name}");
-        Console.WriteLine($"Your color is {ColorString}");
+        switch (packetProperty.PropertyName!)
+        {
+            case "Id":
+            {
+                Id = (byte)Convert.ChangeType(packetProperty.PropertyValue, packetProperty.PropertyType!)!;
+                break;
+            }
+            case "ColorString":
+            {
+                ColorString = (packetProperty.PropertyValue as string)!;
+                break;
+            }
+            default:
+            {
+                var property = GetType().GetProperty(packetProperty.PropertyName!);
+                property!.SetValue(PlayersList[packetProperty.PlayerId],
+                    Convert.ChangeType(packetProperty.PropertyValue, packetProperty.PropertyType!));
+                OnPropertyChanged(nameof(PlayersList));
+                break;
+            }
+        }
     }
 
     private void QueuePacketSend(byte[] packet)
-    {
-        if (packet.Length > 1024)
-            throw new Exception("Max packet size is 1024 bytes.");
+        => _packetSendingQueue.Enqueue(packet);
 
-        _packetSendingQueue.Enqueue(packet);
-    }
-
-    private async Task SendPacketsAsync()
+    private void SendPackets()
     {
         while (true)
         {
             if (_packetSendingQueue.Count == 0)
-            {
-                Thread.Sleep(100);
                 continue;
-            }
 
             var packet = _packetSendingQueue.Dequeue();
             var encryptedPacket = XProtocolEncryptor.Encrypt(packet);
-            await _socket!.SendAsync(encryptedPacket);
 
-            await Task.Delay(100);
+            if (encryptedPacket.Length > 512)
+                throw new Exception("Max packet size is 512 bytes.");
+
+            _socket!.Send(encryptedPacket);
+
+            Thread.Sleep(100);
         }
     }
 

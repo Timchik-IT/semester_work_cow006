@@ -2,10 +2,11 @@
 
 public enum XPacketType
 {
-    NewPlayer,
-    Players,
-    NewMove,
-    Points,
+    Unknown,
     Connection,
-    Unknown
+    PlayersList,
+    UpdatedPlayerProperty,
+    Card,
+    NewMove,
+    Points
 }
