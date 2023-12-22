@@ -19,10 +19,18 @@ public sealed class Player : INotifyPropertyChanged
 {
     private readonly Dictionary<byte, PlayCard> _playCards = new();
     
-    private byte _id;
-    private string _name;
-    private string _colorString;
-
+    private readonly Queue<byte[]> _packetSendingQueue = new();
+    private ObservableCollection<Player>? _playersList = null!;
+    
+    private readonly List<PlayCard> _playerCards = null!;
+    
+    private byte _id; 
+    private string _name = null!;
+    private string _color = null!;
+    private bool _playerReady;
+    private byte _points;
+    private bool _turn;
+    private PlayCard _selectedCard;
     
     public byte Id
     {
@@ -46,18 +54,16 @@ public sealed class Player : INotifyPropertyChanged
     }
 
 
-    public string? ColorString
+    public string? Color
     {
-        get => _colorString;
+        get => _color;
         set
         {
-            _colorString = value;
+            _color = value;
             OnPropertyChanged();
         }
     }
-
-    private bool _playerReady;
-
+    
     public bool PlayerReady
     {
         get => _playerReady;
@@ -67,9 +73,7 @@ public sealed class Player : INotifyPropertyChanged
             OnPropertyChanged();
         }
     }
-
-    private byte _points;
-
+    
     public byte Points
     {
         get => _points;
@@ -79,9 +83,7 @@ public sealed class Player : INotifyPropertyChanged
             OnPropertyChanged();
         }
     }
-
-    private bool _turn;
-
+    
     public bool Turn
     {
         get => _turn;
@@ -92,42 +94,25 @@ public sealed class Player : INotifyPropertyChanged
         }
     }
     
-    private readonly List<PlayCard> _cards = null!;
-
-    public List<PlayCard> Cards
+    public List<PlayCard> PlayerCards
     {
-        get => _cards;
+        get => _playerCards;
         init
         {
-            _cards = value;
+            _playerCards = value;
             OnPropertyChanged();
         }
     }
 
-    public event PropertyChangedEventHandler? PropertyChanged;
-
-    private void OnPropertyChanged([CallerMemberName] string? propertyName = null)
-        => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-
-    private Player(byte id, string name, string colorString)
+    public PlayCard SelectedCard
     {
-        Id = id;
-        Name = name;
-        ColorString = colorString;
-        Cards = new List<PlayCard>();
+        get => _selectedCard;
+        set
+        {
+            _selectedCard = value;
+            OnPropertyChanged();
+        }
     }
-    
-    private Player(byte id) => Id = id;
-    
-    public Player()
-    {
-        PlayersList = new ObservableCollection<Player> { new(0), new(1), new(2), new(3) };
-        Cards = new List<PlayCard>();
-
-        _playCards = CardsGenerator.GenerateListOfPlayCards();;
-    }
-
-    private ObservableCollection<Player>? _playersList;
 
     public ObservableCollection<Player>? PlayersList
     {
@@ -140,8 +125,31 @@ public sealed class Player : INotifyPropertyChanged
         }
     }
 
-    private readonly Queue<byte[]> _packetSendingQueue = new();
+    public event PropertyChangedEventHandler? PropertyChanged;
 
+    private void OnPropertyChanged([CallerMemberName] string? propertyName = null)
+        => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+
+    private Player(byte id, string name, string color)
+    {
+        Id = id;
+        Name = name;
+        Color = color;
+        PlayerCards = new List<PlayCard>();
+    }
+    
+    private Player(byte id) => Id = id;
+    
+    public Player()
+    {
+        PlayersList = new ObservableCollection<Player> { new(0), new(1), new(2), new(3) };
+        Name = "";
+        PlayerCards = new List<PlayCard>();
+
+        _playCards = CardsGenerator.GenerateListOfPlayCards();;
+    }
+    
+    
     private Socket? _socket;
     private IPEndPoint? _serverEndPoint;
 
@@ -240,9 +248,9 @@ public sealed class Player : INotifyPropertyChanged
     
     private void ProcessGettingCard(XPacket packet)
     {
-        var packetBeginCardsSet = XPacketConverter.Deserialize<XPacketCard>(packet);
-        Cards.Add(_playCards[packetBeginCardsSet.CardId]);
-        OnPropertyChanged(nameof(Cards));
+        var packetCard = XPacketConverter.Deserialize<XPacketCard>(packet);
+        PlayerCards.Add(_playCards[packetCard.CardId]);
+        OnPropertyChanged(nameof(PlayerCards));
     }
 
     private void ProcessGettingPlayers(XPacket packet)
@@ -252,7 +260,7 @@ public sealed class Player : INotifyPropertyChanged
         var playersList = playersFromPacket!.Select(x => new Player(x.Item1, x.Item2, x.Item3)).ToList();
         foreach (var player in playersList)
         {
-            PlayersList[player.Id] = playersList[player.Id];
+            PlayersList![player.Id] = playersList[player.Id];
             OnPropertyChanged(nameof(PlayersList));
         }
             
@@ -281,15 +289,28 @@ public sealed class Player : INotifyPropertyChanged
             }
             case "ColorString":
             {
-                ColorString = (packetProperty.PropertyValue as string)!;
+                Color = (packetProperty.PropertyValue as string)!;
+                break;
+            }
+            case "SelectedCardId":
+            {
+                var value = (byte)Convert.ChangeType(packetProperty.PropertyValue, packetProperty.PropertyType!)!;
+                SelectedCard = _playCards[value];
                 break;
             }
             default:
             {
                 var property = GetType().GetProperty(packetProperty.PropertyName!);
-                property!.SetValue(PlayersList[packetProperty.PlayerId],
+                property!.SetValue(PlayersList![packetProperty.PlayerId],
                     Convert.ChangeType(packetProperty.PropertyValue, packetProperty.PropertyType!));
                 OnPropertyChanged(nameof(PlayersList));
+                if (packetProperty.PlayerId == Id)
+                {
+                    property.SetValue(this,
+                        Convert.ChangeType(packetProperty.PropertyValue, packetProperty.PropertyType!)!);
+                    OnPropertyChanged(property.Name);
+                }
+
                 break;
             }
         }

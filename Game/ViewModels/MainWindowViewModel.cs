@@ -27,8 +27,7 @@ public sealed class MainWindowViewModel : ViewModelBase
 
     private void EndTurn()
     {
-        if (Player.PlayerReady)
-            Player.EndTurn();
+       Player.EndTurn();
     }
 
     private void Connect() => Task.Run(() => Player.Connect());

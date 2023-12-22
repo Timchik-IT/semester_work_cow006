@@ -10,8 +10,7 @@ public static class XPacketTypeManager
         RegisterType(XPacketType.UpdatedPlayerProperty, 2, 0);
         RegisterType(XPacketType.PlayersList, 3, 0);
         RegisterType(XPacketType.NewMove, 4, 0);
-        RegisterType(XPacketType.Points, 5, 0);
-        RegisterType(XPacketType.Card, 6, 0);
+        RegisterType(XPacketType.Card, 5, 0);
     }
 
     private static void RegisterType(XPacketType type, byte btype, byte bsubtype)

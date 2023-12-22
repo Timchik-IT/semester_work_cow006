@@ -17,6 +17,7 @@ internal class XServer
     private bool _listening;
     private bool _stopListening;
     private bool _isGameOver;
+    private byte _maxPoint;
 
     private static Stack<byte> _cards = new();
     private static Stack<byte> _list1 = new();
@@ -91,8 +92,7 @@ internal class XServer
             var c = new ConnectedClient(client, (byte)ConnectedClients.Count);
 
             ConnectedClients.Add(c);
-
-
+            
             c.PropertyChanged += Client_PropertyChanged!;
 
             if (ConnectedClients.Count == 4)
@@ -129,43 +129,50 @@ internal class XServer
 
         while (true)
         {
-            if (!ConnectedClients.All(x => x.IsReady)) continue;
-            Thread.Sleep(100);
+            if (!ConnectedClients.All(x => x.IsReady))
+            {
+                Thread.Sleep(1000);
+                continue;
+            }
+            
             break;
-        }
-
-        foreach (var client in ConnectedClients)
-        {
-            // Init players
-            for (var i = 0; i < 10; i++)
-                client.GiveCard(_cards.Pop());
-
-            client.Points = 0;
         }
         
         _isGameOver = false;
-
+        Console.WriteLine("Game is start");
+        
         while (!_isGameOver)
-        {
+        { 
+            foreach (var client in ConnectedClients)
+            {
+                // Init players
+                for (var i = 0; i < 10; i++)
+                    client.GiveCard(_cards.Pop());
+                Console.WriteLine($"Cards for player {client.Name} are ready");
+                client.Points = 0;
+            }
+            
             for (var i = 0; i < 10; i++)
             {
                 var activePlayer = ConnectedClients[_activePlayerId % 4];
-                activePlayer.NextMove();
-
-                Console.WriteLine($"{activePlayer.Name}'s turn");
+                activePlayer.StartTurn();
+                Console.WriteLine($"player {activePlayer.Name} ({activePlayer.Id}) is moving now");
+                
                 while (true)
                 {
                     if (!activePlayer.Turn)
                         break;
                 }
 
-                Console.WriteLine($"Player {activePlayer.Name} has finished his turn");
+                Console.WriteLine($"Player {activePlayer.Name} ({activePlayer.Id}) has finished his turn");
                 _activePlayerId += 1;
             }
-
+            
             foreach (var client in ConnectedClients)
             {
-                
+                if (client.Points < 66) continue;
+                _isGameOver = true;
+                Console.WriteLine("Game over");
             }
         }
     }

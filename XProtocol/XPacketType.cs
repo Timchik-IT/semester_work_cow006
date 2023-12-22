@@ -7,6 +7,5 @@ public enum XPacketType
     PlayersList,
     UpdatedPlayerProperty,
     Card,
-    NewMove,
-    Points
+    NewMove
 }

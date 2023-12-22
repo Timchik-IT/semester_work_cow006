@@ -6,7 +6,7 @@ namespace XProtocol.XPackets;
 public class XPacketPlayers
 {
     [XField(1)] public List<(byte, string, string)>? Players;
-    
+
     public XPacketPlayers()
     {
     }

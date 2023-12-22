@@ -89,7 +89,7 @@
                     <ListBox.ItemTemplate>
                         <DataTemplate>
                             <StackPanel Orientation="Horizontal" VerticalAlignment="Stretch">
-                                <Ellipse Fill="{Binding ColorString}" Width="10" Height="10" Margin="10 0 10 0"
+                                <Ellipse Fill="{Binding Color}" Width="10" Height="10" Margin="10 0 10 0"
                                          HorizontalAlignment="Center" VerticalAlignment="Center">
                                 </Ellipse>
                                 <TextBlock Text="{Binding Name}" HorizontalAlignment="Center" Foreground="White"
@@ -122,7 +122,7 @@
                     <Grid ColumnDefinitions="1*,2*,1*" RowDefinitions="1*,2*,1*">
                         <Grid Grid.Row="0" Grid.Column="1">
                             <StackPanel Background="DarkGray">
-                                <Ellipse Fill="{Binding Player.PlayersList[0].ColorString}" Width="10" Height="10"
+                                <Ellipse Fill="{Binding Player.PlayersList[0].Color}" Width="10" Height="10"
                                          Margin="10 10 10 10"
                                          HorizontalAlignment="Center" VerticalAlignment="Center" />
                                 <TextBlock Text="{Binding Player.PlayersList[0].Name}" HorizontalAlignment="Center"
@@ -134,7 +134,7 @@
 
                         <Grid Grid.Row="1" Grid.Column="0">
                             <StackPanel Background="DarkGray">
-                                <Ellipse Fill="{Binding Player.PlayersList[1].ColorString}" Width="10" Height="10"
+                                <Ellipse Fill="{Binding Player.PlayersList[1].Color}" Width="10" Height="10"
                                          Margin="10 10 10 10"
                                          HorizontalAlignment="Center" VerticalAlignment="Center" />
                                 <TextBlock Text="{Binding Player.PlayersList[1].Name}" HorizontalAlignment="Center"
@@ -154,7 +154,7 @@
 
                         <Grid Grid.Row="1" Grid.Column="2">
                             <StackPanel Background="DarkGray">
-                                <Ellipse Fill="{Binding Player.PlayersList[3].ColorString}" Width="10" Height="10"
+                                <Ellipse Fill="{Binding Player.PlayersList[3].Color}" Width="10" Height="10"
                                          Margin="10 10 10 10"
                                          HorizontalAlignment="Center" VerticalAlignment="Center" />
                                 <TextBlock Text="{Binding Player.PlayersList[3].Name}" HorizontalAlignment="Center"
@@ -166,7 +166,7 @@
 
                         <Grid Grid.Row="2" Grid.Column="1">
                             <StackPanel Background="DarkGray">
-                                <Ellipse Fill="{Binding Player.PlayersList[2].ColorString}" Width="10" Height="10"
+                                <Ellipse Fill="{Binding Player.PlayersList[2].Color}" Width="10" Height="10"
                                          Margin="10 10 10 10"
                                          HorizontalAlignment="Center" VerticalAlignment="Center" />
                                 <TextBlock Text="{Binding Player.PlayersList[2].Name}" HorizontalAlignment="Center"
