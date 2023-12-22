@@ -338,6 +338,15 @@ public sealed class Player : INotifyPropertyChanged
         }
     }
 
+    internal void SelectCard(byte id)
+    {
+        PlayerCards.Remove(_playCards[id]);
+        OnPropertyChanged(nameof(PlayerCards));
+        PlayerReady = true;
+        var packet = XPacketConverter.Serialize(XPacketType.Card, new XPacketCard(id)).ToPacket();
+        QueuePacketSend(packet);
+    }
+    
     internal void EndTurn()
     {
         Turn = false;

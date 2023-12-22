@@ -5,6 +5,7 @@ public class PlayCard
     public PlayCard(int id)
     {
         Id = (byte)id;
+        Number = (byte)(id+1);
         Points = CalculatePoints(id);
     }
 
@@ -21,7 +22,8 @@ public class PlayCard
 
         return numOfCard % 11 == 0 ? (byte)5 : (byte)1;
     }
-
+    
+    public byte Number { get; }
     public byte Id { get; }
     public byte Points { get; }
 }

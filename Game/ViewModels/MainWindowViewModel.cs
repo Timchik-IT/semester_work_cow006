@@ -1,4 +1,5 @@
-﻿using System.Collections.ObjectModel;
+﻿using System;
+using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Reactive;
@@ -16,6 +17,8 @@ public sealed class MainWindowViewModel : ViewModelBase
     public ReactiveCommand<Unit, Unit> ConnectCommand { get; }
 
     public ReactiveCommand<Unit, Unit> EndTurnCommand { get; }
+    
+    public ReactiveCommand<byte, Unit> SelectCardCommand { get; }
 
     public MainWindowViewModel()
     {
@@ -23,12 +26,15 @@ public sealed class MainWindowViewModel : ViewModelBase
         Player = new Player();
         ConnectCommand = ReactiveCommand.Create(Connect);
         EndTurnCommand = ReactiveCommand.Create(EndTurn);
+        SelectCardCommand = ReactiveCommand.Create<byte>(SelectCard);
     }
 
     private void EndTurn()
     {
        Player.EndTurn();
     }
+
+    private void SelectCard(byte idCard) => Player.SelectCard(idCard);
 
     private void Connect() => Task.Run(() => Player.Connect());
 
