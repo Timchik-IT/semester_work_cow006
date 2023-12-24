@@ -29,7 +29,7 @@ public class ConnectedClient
     private byte _points;
     private byte _selectedCardId;
 
-    private List<byte>? Cards { get; init; }
+    private List<byte>? PlayerCards { get; }
 
     public bool IsReady { get; private set; }
 
@@ -92,18 +92,16 @@ public class ConnectedClient
         }
     }
     
+    public event PropertyChangedEventHandler? PropertyChanged;
     
     private void OnPropertyChanged([CallerMemberName] string? propertyName = null)
         => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     
-    public event PropertyChangedEventHandler? PropertyChanged;
-    
-
     public ConnectedClient(Socket client, byte id)
     {
         Client = client;
         Id = id;
-        Cards = new List<byte>();
+        PlayerCards = new List<byte>();
 
         Task.Run(ReceivePackets);
         Task.Run(SendPackets);
@@ -145,12 +143,12 @@ public class ConnectedClient
             case XPacketType.NewMove:
                 ProcessEndTurn();
                 break;
+            case XPacketType.DeckCard:
+                ProcessSettingSelectedCard(packet);
+                break;
             case XPacketType.Unknown:
                 break;
             case XPacketType.PlayersList:
-                break;
-            case XPacketType.Card:
-                ProcessSettingSelectedCard(packet);
                 break;
             default:
                 throw new ArgumentException("Получен неизвестный пакет");
@@ -160,7 +158,7 @@ public class ConnectedClient
     private void ProcessSettingSelectedCard(XPacket packet)
     {
         var packetCard = XPacketConverter.Deserialize<XPacketCard>(packet);
-        Cards!.Remove(packetCard.CardId);
+        PlayerCards!.Remove(packetCard.CardId);
         SelectedCardId = packetCard.CardId;
     }
     
@@ -169,7 +167,6 @@ public class ConnectedClient
         var packetProperty = XPacketConverter.Deserialize<XPacketUpdatedPlayerProperty>(packet);
         switch (packetProperty.PropertyName)
         {
-            
             case "Name":
             {
                 Name = Convert.ChangeType(packetProperty.PropertyValue, packetProperty.PropertyType!) as string;
@@ -240,9 +237,15 @@ public class ConnectedClient
         }
     }
 
+    public void SendDeckCard(byte cardId)
+    { 
+        var packetCard = XPacketConverter.Serialize(XPacketType.DeckCard, new XPacketCard(cardId)).ToPacket();
+        QueuePacketSend(packetCard);
+    }
+    
     public void GiveCard(byte cardId)
     {
-        Cards!.Add(cardId);
+        PlayerCards!.Add(cardId);
         var packetCard = XPacketConverter.Serialize(XPacketType.Card, new XPacketCard(cardId)).ToPacket();
         QueuePacketSend(packetCard);
     }

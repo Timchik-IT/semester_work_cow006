@@ -8,7 +8,6 @@ public class XPacket
     public byte PacketType { get; private init; }
     public byte PacketSubtype { get; private init; }
     private List<XPacketField> Fields { get; } = new();
-    public bool ChangeHeaders { get; set; }
 
     private XPacket()
     {
@@ -64,10 +63,7 @@ public class XPacket
     {
         var packet = new MemoryStream();
 
-        packet.Write(
-            ChangeHeaders
-                ? new byte[] { 0x95, 0xAA, 0xFF, PacketType, PacketSubtype }
-                : new byte[] { 0xAF, 0xAA, 0xAF, PacketType, PacketSubtype }, 0, 5);
+        packet.Write(new byte[] { 0xAF, 0xAA, 0xAF, PacketType, PacketSubtype }, 0, 5);
 
         var fields = Fields.OrderBy(field => field.FieldId);
 

@@ -1,4 +1,5 @@
-﻿using System.ComponentModel;
+﻿using System.Collections;
+using System.ComponentModel;
 using System.Net;
 using System.Net.Sockets;
 using TCPServer.Services;
@@ -20,11 +21,6 @@ internal class XServer
     private byte _maxPoint;
 
     private static Stack<byte> _cards = new();
-    private static Stack<byte> _list1 = new();
-    private static Stack<byte> _list2 = new();
-    private static Stack<byte> _list3 = new();
-    private static Stack<byte> _list4 = new();
-
     
     private int _activePlayerId;
 
@@ -117,10 +113,7 @@ internal class XServer
     private void InitializeGame()
     {
         _cards = new CardsInitializer().GetCards();
-        _list1.Push(_cards.Pop());
-        _list2.Push(_cards.Pop());
-        _list3.Push(_cards.Pop());
-        _list4.Push(_cards.Pop());
+        Console.WriteLine("Cards ready!");
     }
 
     public void StartGame()
@@ -145,16 +138,17 @@ internal class XServer
         { 
             foreach (var client in ConnectedClients)
             {
-                // Init players
                 for (var i = 0; i < 10; i++)
                     client.GiveCard(_cards.Pop());
                 Console.WriteLine($"Cards for player {client.Name} are ready");
                 client.Points = 0;
             }
+
+            var activePlayerId = 0;
             
             for (var i = 0; i < 10; i++)
             {
-                var activePlayer = ConnectedClients[_activePlayerId % 4];
+                var activePlayer = ConnectedClients[activePlayerId % 4];
                 activePlayer.StartTurn();
                 Console.WriteLine($"player {activePlayer.Name} ({activePlayer.Id}) is moving now");
                 
@@ -163,11 +157,20 @@ internal class XServer
                     if (!activePlayer.Turn)
                         break;
                 }
-
+                
                 Console.WriteLine($"Player {activePlayer.Name} ({activePlayer.Id}) has finished his turn");
-                _activePlayerId += 1;
-            }
-            
+                activePlayerId += 1;
+
+                /*
+                var selectedCards = ConnectedClients.Select(x => x.SelectedCardId).ToList();
+                selectedCards.Sort();
+
+                foreach (var client in ConnectedClients)
+                    foreach (var card in selectedCards)
+                        client.SendDeckCard(card);
+                */
+            }   
+
             foreach (var client in ConnectedClients)
             {
                 if (client.Points < 66) continue;

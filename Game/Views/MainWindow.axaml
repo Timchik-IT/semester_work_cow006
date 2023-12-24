@@ -12,10 +12,8 @@
     <Window.Styles>
         <Style Selector="Button.Card">
             <Setter Property="Background" Value="Firebrick" />
-            <Setter Property="CornerRadius" Value="3" />
-            <Setter Property="Height" Value="120" />
-            <Setter Property="Width" Value="80" />
         </Style>
+        
         <Style Selector="TextBlock.CardText">
             <Setter Property="Foreground" Value="White" />
             <Setter Property="FontSize" Value="10" />
@@ -128,78 +126,42 @@
             <Grid Grid.Row="1" ColumnDefinitions="1*,16*" VerticalAlignment="Stretch">
                 <Grid Grid.Column="0" Background="Gray">
                     <StackPanel> 
-                         <TextBlock Foreground="White"> Ваш ID:</TextBlock> 
-                         <TextBlock Text="{Binding Player.Id}" /> 
-                         <TextBlock Foreground="White"> Ваш ник:</TextBlock> 
-                         <TextBlock Text="{Binding Player.Name}" /> 
-                         <TextBlock Foreground="White"> Ваши очки:</TextBlock> 
-                         <TextBlock Text="{Binding Player.Points}" /> 
+                        <TextBlock Foreground="White"> Ваш ID:</TextBlock> 
+                        <TextBlock Text="{Binding Player.Id}" /> 
+                        <TextBlock Foreground="White"> Ваш ник:</TextBlock> 
+                        <TextBlock Text="{Binding Player.Name}" /> 
+                        <TextBlock Foreground="White"> Ваши очки:</TextBlock> 
+                        <TextBlock Text="{Binding Player.Points}" /> 
                     </StackPanel> 
                 </Grid> 
                 <Grid Grid.Column="1" Background="White">
                     <Grid RowDefinitions="15*, 5*">
-                        <Grid Grid.Row="0" ColumnDefinitions="1*,2*,1*" RowDefinitions="1*,2*,1*"> 
-                            <Grid Grid.Row="0" Grid.Column="1"> 
-                                <StackPanel Background="DarkGray"> 
-                                    <Ellipse Fill="{Binding Player.PlayersList[0].Color}" Width="10" Height="10"
-                                             Margin="10 10 10 10" 
-                                             HorizontalAlignment="Center" VerticalAlignment="Center" /> 
-                                    <TextBlock Text="{Binding Player.PlayersList[0].Name}" HorizontalAlignment="Center" 
-                                               Foreground="Black" /> 
-                                    <TextBlock Text="{Binding Player.PlayersList[0].Points}" HorizontalAlignment="Center" 
-                                               Foreground="Black" /> 
-                                </StackPanel> 
+                        <Grid Grid.Row="0">
+                            <Grid RowDefinitions="1*,18*">
+                                <Grid Grid.Row="0" >
+                                    <TextBlock Text="Выберите карты" HorizontalAlignment="Center" Foreground="DarkRed" IsVisible="{Binding Player.Turn}"/>
+                                </Grid>
+                                <Grid Grid.Row="1" RowDefinitions="*, *" ColumnDefinitions="*, *">
+                                    <Grid Grid.Row="0" Grid.Column="0">
+                                        
+                                    </Grid>
+                                    <Grid Grid.Row="0" Grid.Column="1">
+                                        
+                                    </Grid>
+                                    <Grid Grid.Row="1" Grid.Column="0">
+                                        
+                                    </Grid>
+                                    <Grid Grid.Row="1" Grid.Column="1">
+                                        
+                                    </Grid>
+                                </Grid>
                             </Grid> 
-
-                            <Grid Grid.Row="1" Grid.Column="0"> 
-                                <StackPanel Background="DarkGray"> 
-                                    <Ellipse Fill="{Binding Player.PlayersList[1].Color}" Width="10" Height="10" 
-                                             Margin="10 10 10 10" 
-                                             HorizontalAlignment="Center" VerticalAlignment="Center" /> 
-                                    <TextBlock Text="{Binding Player.PlayersList[1].Name}" HorizontalAlignment="Center" 
-                                               Foreground="Black" />
-                                    <TextBlock Text="{Binding Player.PlayersList[1].Points}" HorizontalAlignment="Center" 
-                                               Foreground="Black" />
-                                </StackPanel> 
-                            </Grid> 
-            
-                            <Grid Grid.Row="1" Grid.Column="1"> 
-                                <StackPanel Background="BurlyWood"> 
-                                    <TextBlock Text="Deck" 
-                                               HorizontalAlignment="Center" Foreground="Black">
-                                    </TextBlock> 
-                                </StackPanel> 
-                            </Grid>
-            
-                            <Grid Grid.Row="1" Grid.Column="2"> 
-                                <StackPanel Background="DarkGray"> 
-                                    <Ellipse Fill="{Binding Player.PlayersList[3].Color}" Width="10" Height="10" 
-                                             Margin="10 10 10 10" 
-                                             HorizontalAlignment="Center" VerticalAlignment="Center" /> 
-                                    <TextBlock Text="{Binding Player.PlayersList[3].Name}" HorizontalAlignment="Center" 
-                                               Foreground="Black" /> 
-                                    <TextBlock Text="{Binding Player.PlayersList[3].Points}" HorizontalAlignment="Center" 
-                                               Foreground="Black" /> 
-                                </StackPanel> 
-                            </Grid>
-            
-                            <Grid Grid.Row="2" Grid.Column="1"> 
-                                <StackPanel Background="DarkGray"> 
-                                    <Ellipse Fill="{Binding Player.PlayersList[2].Color}" Width="10" Height="10" 
-                                             Margin="10 10 10 10" 
-                                             HorizontalAlignment="Center" VerticalAlignment="Center" /> 
-                                    <TextBlock Text="{Binding Player.PlayersList[2].Name}" HorizontalAlignment="Center" 
-                                               Foreground="Black" /> 
-                                    <TextBlock Text="{Binding Player.PlayersList[2].Points}" HorizontalAlignment="Center" 
-                                               Foreground="Black" /> 
-                                </StackPanel> 
-                            </Grid>
                         </Grid>
                         <Grid Grid.Row="1">
-                            <ListBox ItemsSource="{Binding Player.PlayerCards}" SelectionMode="AlwaysSelected">
+                            <ListBox ItemsSource="{Binding Player.PlayerCards}">
                                 <ListBox.ItemsPanel>
                                     <ItemsPanelTemplate>
-                                        <StackPanel Orientation="Horizontal" />
+                                        <StackPanel Orientation="Horizontal"/>
                                     </ItemsPanelTemplate>
                                 </ListBox.ItemsPanel>
                                 <ListBox.ItemTemplate>
@@ -207,7 +169,9 @@
                                         <Button Classes="Card" CommandParameter="{Binding Id}"
                                                 Command="{Binding $parent[Grid].((vm:MainWindowViewModel)DataContext).SelectCardCommand}">
                                             <StackPanel>
+                                                <TextBlock Text="Number of cards:"/>
                                                 <TextBlock Text="{Binding Number}" Classes="CardText"/>
+                                                <TextBlock Text="Points of cards:"/>
                                                 <TextBlock Text="{Binding Points}" Classes="CardText"/>
                                             </StackPanel>
                                         </Button>

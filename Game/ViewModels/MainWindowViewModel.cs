@@ -31,7 +31,7 @@ public sealed class MainWindowViewModel : ViewModelBase
 
     private void EndTurn()
     {
-       Player.EndTurn();
+        Player.EndTurn();
     }
 
     private void SelectCard(byte idCard) => Player.SelectCard(idCard);
