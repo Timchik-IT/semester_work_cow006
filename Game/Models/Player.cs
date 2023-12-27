@@ -18,11 +18,11 @@ namespace Game.Models;
 
 public sealed class Player : INotifyPropertyChanged
 {
-    private readonly Dictionary<byte, PlayCard> _playCards = new();
+    private readonly Dictionary<byte, PlayCard> _playCards = CardsManager.GenerateListOfPlayCards();
     private readonly Queue<byte[]> _packetSendingQueue = new();
     
     private ObservableCollection<Player>? _playersList = null!;
-    private ObservableCollection<PlayCard>[] _deskLists = null!;
+    private List<ObservableCollection<PlayCard>> _deckLists = null!;
     private readonly ObservableCollection<PlayCard> _playerCards = null!;
     
     private byte _id; 
@@ -30,14 +30,15 @@ public sealed class Player : INotifyPropertyChanged
     private string _color = null!;
     private byte _points;
     private bool _turn;
-    private PlayCard _selectedCard;
+    private PlayCard _selectedCard = null!;
+    private bool _isReady;
 
-    public ObservableCollection<PlayCard>[] DeskLists
+    public List<ObservableCollection<PlayCard>> DeckLists
     {
-        get => _deskLists;
+        get => _deckLists;
         set
         {
-            _deskLists = value;
+            _deckLists = value;
             OnPropertyChanged();
         }
     }
@@ -93,6 +94,16 @@ public sealed class Player : INotifyPropertyChanged
             OnPropertyChanged();
         }
     }
+
+    public bool IsReady
+    {
+        get => _isReady;
+        set
+        {
+            _isReady = value;
+            OnPropertyChanged();
+        }
+    }
     
     public ObservableCollection<PlayCard> PlayerCards
     {
@@ -104,7 +115,7 @@ public sealed class Player : INotifyPropertyChanged
         }
     }
 
-    public PlayCard SelectedCard
+    private PlayCard SelectedCard
     {
         get => _selectedCard;
         set
@@ -145,21 +156,10 @@ public sealed class Player : INotifyPropertyChanged
         PlayersList = new ObservableCollection<Player> { new(0), new(1), new(2), new(3) };
         Name = "";
         PlayerCards = new ObservableCollection<PlayCard>();
-        DeskLists = new ObservableCollection<PlayCard>[4];
-
-        // TODO  
-        
-        _playCards = CardsGenerator.GenerateListOfPlayCards();;
-    }
-
-    private ObservableCollection<PlayCard>[] Generate( ObservableCollection<PlayCard>[] deck)
-    {
-        var temp = 0;
+        DeckLists = new List<ObservableCollection<PlayCard>>();
         for (var i = 0; i < 4; i++)
-            deck[i].Add(_playCards[(byte)(temp + 12)]);
-        return deck;
+            DeckLists.Add(new ObservableCollection<PlayCard>());
     }
-    
     
     private Socket? _socket;
     private IPEndPoint? _serverEndPoint;
@@ -234,21 +234,27 @@ public sealed class Player : INotifyPropertyChanged
         {
             case XPacketType.Connection:
                 ProcessConnection(packet);
+                Console.WriteLine("Пакет подключения");
                 break;
             case XPacketType.UpdatedPlayerProperty:
                 ProcessUpdatingProperty(packet);
+                Console.WriteLine("Пакет обновления");
                 break;
             case XPacketType.PlayersList:
                 ProcessGettingPlayers(packet);
+                Console.WriteLine("Пакет клиентов");
                 break;
             case XPacketType.Card:
                 ProcessGettingCard(packet);
+                Console.WriteLine("Пакет карты");
                 break;
             case XPacketType.DeckCard:
                 ProcessUpdatingDeckLists(packet);
+                Console.WriteLine("Пакет карты для стола");
                 break;
             case XPacketType.NewMove:
                 ProcessStartingTurn(packet);
+                Console.WriteLine("Пакет хода");
                 break;
             case XPacketType.Unknown:
                 break;
@@ -259,12 +265,11 @@ public sealed class Player : INotifyPropertyChanged
 
     private void ProcessStartingTurn(XPacket packet) 
         => Turn = true;
-
+    
     private void ProcessUpdatingDeckLists(XPacket packet)
     {
         var packetCard = XPacketConverter.Deserialize<XPacketCard>(packet);
-        UpdateDeckLists(_playCards[packetCard.CardId]);
-        OnPropertyChanged(nameof(DeskLists));
+        UpdateDeckLists(packetCard.CardId);
     }
     
     private void ProcessGettingCard(XPacket packet)
@@ -294,7 +299,9 @@ public sealed class Player : INotifyPropertyChanged
         var connection = XPacketConverter.Deserialize<XPacketConnection>(packet);
 
         if (connection.IsSuccessful)
+        {
             Console.WriteLine("Handshake successful!");
+        }
     }
 
     private void ProcessUpdatingProperty(XPacket packet)
@@ -311,12 +318,6 @@ public sealed class Player : INotifyPropertyChanged
             case "ColorString":
             {
                 Color = (packetProperty.PropertyValue as string)!;
-                break;
-            }
-            case "SelectedCardId":
-            {
-                var value = (byte)Convert.ChangeType(packetProperty.PropertyValue, packetProperty.PropertyType!)!;
-                SelectedCard = _playCards[value];
                 break;
             }
             default:
@@ -359,59 +360,89 @@ public sealed class Player : INotifyPropertyChanged
         }
     }
     
-    private void UpdateDeckLists(PlayCard card)
+    private void UpdateDeckLists(byte cardId)
     {
-        var temp = 105;
-        var listId = 0;
-        var updatedList = new ObservableCollection<PlayCard>();
-        for(var i = 0; i < 4; i++)
+        var card = _playCards[cardId];
+        var listsReady = true;
+        foreach (var list in DeckLists.Where(list => list.Count == 0))
         {
-            var diff = _deskLists[i].Last().Number - card.Number;
-            if ( diff < temp)
+            list.Add(card);
+            listsReady = false;
+        }
+        
+        if (!listsReady) return;
+
+        var count = 0;
+        for(var i = 0; i < 4; i++)
+            if (DeckLists[i].Last().Number < card.Number)
+                count++;
+        
+        if (count == 4)
+        {
+            var listId = 0;
+            var minPoints = 999;
+            for (var index = 0; index < DeckLists.Count; index++)
             {
+                var list = DeckLists[index];
+                var currentPoints = list.Aggregate(0, (current, currentCard) => current + currentCard.Points);
+                if (currentPoints >= minPoints) continue;
+                
+                minPoints = currentPoints;
+                listId = index;
+            }
+            DeckLists[listId] = new ObservableCollection<PlayCard> { card };
+            
+            if (!PlayerCards.Contains(card)) return;
+            PlayerCards.Remove(card);
+            Points += (byte)minPoints;
+        }
+        else
+        {
+            var temp = 105;
+            var listId = 0;
+            var updatedList = new ObservableCollection<PlayCard>();
+            for(var i = 0; i < 4; i++)
+            {
+                var diff = card.Number - DeckLists[i].Last().Number;
+                if (diff >= temp && diff > 0) continue;
                 temp = diff;
                 listId = i;
-                updatedList = _deskLists[listId];
+                updatedList = DeckLists[listId];
             }
-        }
-        
-        if (updatedList.Count == 5)
-        {
-            if (PlayerCards.Contains(card))
+            
+            if (updatedList.Count == 5)
             {
-                PlayerCards.Remove(card);
-                OnPropertyChanged(nameof(PlayerCards));
-                
-                foreach (var listCard in updatedList)
+                if (PlayerCards.Contains(card))
                 {
-                    Points += listCard.Points;
+                    PlayerCards.Remove(card);
+                    foreach (var listCard in updatedList)
+                    {
+                        Points += listCard.Points;
+                    }
                 }
+
+                updatedList = new ObservableCollection<PlayCard>();
             }
-
-            updatedList = new ObservableCollection<PlayCard>();
-        }
         
-        updatedList.Add(card);
-        _deskLists[listId] = updatedList;
+            updatedList.Add(card);
+            _deckLists[listId] = updatedList;   
+        }
     }
-
+    
     internal void SelectCard(byte idCard)
     {
         SelectedCard = _playCards[idCard];
-        Console.WriteLine($"Ты выбрал карту: {SelectedCard}");
+        Console.WriteLine($"Selected card {SelectedCard.Number}");
+        IsReady = true;
     }
     
     internal void EndTurn()
     {
         Turn = false;
-        var packet = XPacketConverter.Serialize(XPacketType.NewMove, new XPacketNewMove()).ToPacket();
-        // SendSelectedCard();
-        QueuePacketSend(packet);
-    }
-
-    private void SendSelectedCard()
-    {
-        var packet = XPacketConverter.Serialize(XPacketType.DeckCard, new XPacketCard(SelectedCard.Id)).ToPacket();
-        QueuePacketSend(packet);
+        IsReady = false;
+        var movePacket = XPacketConverter.Serialize(XPacketType.NewMove, new XPacketNewMove()).ToPacket();
+        QueuePacketSend(movePacket);
+        var cardPacket = XPacketConverter.Serialize(XPacketType.DeckCard, new XPacketCard(SelectedCard.Id)).ToPacket();
+        QueuePacketSend(cardPacket);
     }
 }

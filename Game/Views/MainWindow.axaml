@@ -115,7 +115,7 @@
                          </DataTemplate> 
                      </ListBox.ItemTemplate>
                 </ListBox> 
-                <Button x:Name="EndMoveButton" Command="{Binding EndTurnCommand}" IsEnabled="{Binding Player.Turn}" 
+                <Button x:Name="EndMoveButton" Command="{Binding EndTurnCommand}" IsEnabled="{Binding Player.IsReady}" 
                         HorizontalAlignment="Right"
                         VerticalAlignment="Center" 
                         Background="#9B1212" 
@@ -134,28 +134,71 @@
                         <TextBlock Text="{Binding Player.Points}" /> 
                     </StackPanel> 
                 </Grid> 
-                <Grid Grid.Column="1" Background="White">
+                <Grid Grid.Column="1">
                     <Grid RowDefinitions="15*, 5*">
-                        <Grid Grid.Row="0">
-                            <Grid RowDefinitions="1*,18*">
-                                <Grid Grid.Row="0" >
-                                    <TextBlock Text="Выберите карты" HorizontalAlignment="Center" Foreground="DarkRed" IsVisible="{Binding Player.Turn}"/>
-                                </Grid>
-                                <Grid Grid.Row="1" RowDefinitions="*, *" ColumnDefinitions="*, *">
-                                    <Grid Grid.Row="0" Grid.Column="0">
-                                        
-                                    </Grid>
-                                    <Grid Grid.Row="0" Grid.Column="1">
-                                        
-                                    </Grid>
-                                    <Grid Grid.Row="1" Grid.Column="0">
-                                        
-                                    </Grid>
-                                    <Grid Grid.Row="1" Grid.Column="1">
-                                        
-                                    </Grid>
-                                </Grid>
-                            </Grid> 
+                        <Grid Grid.Row="0" RowDefinitions="Auto, Auto" ColumnDefinitions="Auto, Auto">
+                            <Grid Grid.Row="0" Grid.Column="0">
+                                <ListBox ItemsSource="{Binding Player.DeckLists[0]}">
+                                    <ListBox.ItemTemplate>
+                                        <DataTemplate>
+                                            <StackPanel>
+                                                <TextBlock Text="Number of cards:"/>
+                                                <TextBlock Text="{Binding Number}" Classes="CardText"/>
+                                                <TextBlock Text="Points of cards:"/>
+                                                <TextBlock Text="{Binding Points}" Classes="CardText"/>
+                                            </StackPanel>
+                                        </DataTemplate>
+                                    </ListBox.ItemTemplate>
+                                </ListBox>    
+                            </Grid>
+                            <Grid Grid.Row="0" Grid.Column="1">
+                                <ListBox ItemsSource="{Binding Player.DeckLists[1]}">
+                                    <ListBox.ItemTemplate>
+                                        <DataTemplate>
+                                            <Button Classes="Card">
+                                                <StackPanel>
+                                                    <TextBlock Text="Number of cards:"/>
+                                                    <TextBlock Text="{Binding Number}" Classes="CardText"/>
+                                                    <TextBlock Text="Points of cards:"/>
+                                                    <TextBlock Text="{Binding Points}" Classes="CardText"/>
+                                                </StackPanel>
+                                            </Button>
+                                        </DataTemplate>
+                                    </ListBox.ItemTemplate>
+                                </ListBox>    
+                            </Grid>
+                            <Grid Grid.Row="1" Grid.Column="0">
+                                <ListBox ItemsSource="{Binding Player.DeckLists[2]}">
+                                    <ListBox.ItemTemplate>
+                                        <DataTemplate>
+                                            <Button Classes="Card">
+                                                <StackPanel>
+                                                    <TextBlock Text="Number of cards:"/>
+                                                    <TextBlock Text="{Binding Number}" Classes="CardText"/>
+                                                    <TextBlock Text="Points of cards:"/>
+                                                    <TextBlock Text="{Binding Points}" Classes="CardText"/>
+                                                </StackPanel>
+                                            </Button>
+                                        </DataTemplate>
+                                    </ListBox.ItemTemplate>
+                                </ListBox>    
+                            </Grid>
+                            <Grid Grid.Row="1" Grid.Column="1">
+                                <ListBox ItemsSource="{Binding Player.DeckLists[3]}">
+                                    <ListBox.ItemTemplate>
+                                        <DataTemplate>
+                                            <Button Classes="Card">
+                                                <StackPanel>
+                                                    <TextBlock Text="Number of cards:"/>
+                                                    <TextBlock Text="{Binding Number}" Classes="CardText"/>
+                                                    <TextBlock Text="Points of cards:"/>
+                                                    <TextBlock Text="{Binding Points}" Classes="CardText"/>
+                                                </StackPanel>
+                                            </Button>
+                                        </DataTemplate>
+                                    </ListBox.ItemTemplate>
+                                </ListBox>    
+                            </Grid>
                         </Grid>
                         <Grid Grid.Row="1">
                             <ListBox ItemsSource="{Binding Player.PlayerCards}">

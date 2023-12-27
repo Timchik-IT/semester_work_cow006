@@ -116,6 +116,13 @@ internal class XServer
         Console.WriteLine("Cards ready!");
     }
 
+    private void SendPackOfCards(byte[] cardsId)
+    {
+        foreach (var client in ConnectedClients)
+            foreach (var cardId in cardsId)
+                client.SendDeckCard(cardId);
+    }
+
     public void StartGame()
     {
         InitializeGame();
@@ -127,7 +134,6 @@ internal class XServer
                 Thread.Sleep(1000);
                 continue;
             }
-            
             break;
         }
         
@@ -135,7 +141,18 @@ internal class XServer
         Console.WriteLine("Game is start");
         
         while (!_isGameOver)
-        { 
+        {
+            var startedCards = new[]
+            {
+                _cards.Pop(),
+                _cards.Pop(),
+                _cards.Pop(),
+                _cards.Pop()
+            };
+            SendPackOfCards(startedCards);
+            Console.WriteLine("Cards for play deck are ready");
+            
+            
             foreach (var client in ConnectedClients)
             {
                 for (var i = 0; i < 10; i++)
@@ -143,33 +160,28 @@ internal class XServer
                 Console.WriteLine($"Cards for player {client.Name} are ready");
                 client.Points = 0;
             }
-
-            var activePlayerId = 0;
             
             for (var i = 0; i < 10; i++)
             {
-                var activePlayer = ConnectedClients[activePlayerId % 4];
-                activePlayer.StartTurn();
-                Console.WriteLine($"player {activePlayer.Name} ({activePlayer.Id}) is moving now");
-                
-                while (true)
+                for (var activePlayerId = 0; activePlayerId < 4; activePlayerId++)
                 {
-                    if (!activePlayer.Turn)
-                        break;
-                }
-                
-                Console.WriteLine($"Player {activePlayer.Name} ({activePlayer.Id}) has finished his turn");
-                activePlayerId += 1;
+                    var activePlayer = ConnectedClients[activePlayerId];
+                    activePlayer.StartTurn();
+                    Console.WriteLine($"player {activePlayer.Name} ({activePlayer.Id}) is moving now");
 
-                /*
+                    while (true)
+                    {
+                        if (!activePlayer.Turn)
+                            break;
+                    }
+
+                    Console.WriteLine($"Player {activePlayer.Name} ({activePlayer.Id}) has finished his turn");
+                }
+
                 var selectedCards = ConnectedClients.Select(x => x.SelectedCardId).ToList();
                 selectedCards.Sort();
-
-                foreach (var client in ConnectedClients)
-                    foreach (var card in selectedCards)
-                        client.SendDeckCard(card);
-                */
-            }   
+                SendPackOfCards(selectedCards.ToArray());
+            }
 
             foreach (var client in ConnectedClients)
             {

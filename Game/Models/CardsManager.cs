@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Linq;
 
 namespace Game.Models;
 
-public static class CardsGenerator
+public static class CardsManager
 {
     public static Dictionary<byte, PlayCard> GenerateListOfPlayCards()
     {

@@ -238,9 +238,10 @@ public class ConnectedClient
     }
 
     public void SendDeckCard(byte cardId)
-    { 
-        var packetCard = XPacketConverter.Serialize(XPacketType.DeckCard, new XPacketCard(cardId)).ToPacket();
-        QueuePacketSend(packetCard);
+    {
+        var packet = XPacketConverter.Serialize(XPacketType.DeckCard, new XPacketCard(cardId)).ToPacket();
+        QueuePacketSend(packet);
+        Console.WriteLine("send packet with card gor deck");
     }
     
     public void GiveCard(byte cardId)
