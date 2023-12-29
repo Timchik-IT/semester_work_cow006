@@ -21,6 +21,12 @@
             <Setter Property="HorizontalAlignment" Value="Center" />
             <Setter Property="Margin" Value="0, 10, 0, 30 " />
         </Style>
+        
+        <Style Selector="StackPanel.Card">
+            <Setter Property="Background" Value="Firebrick" />
+            <Setter Property="Height" Value="120" />
+            <Setter Property="Width" Value="80" />
+        </Style>
     </Window.Styles>
     
     <Grid>
@@ -132,16 +138,23 @@
                         <TextBlock Text="{Binding Player.Name}" /> 
                         <TextBlock Foreground="White"> Ваши очки:</TextBlock> 
                         <TextBlock Text="{Binding Player.Points}" /> 
+                        <TextBlock Foreground="Firebrick" Text="ТВОЙ ХОД" 
+                                   IsVisible="{Binding Player.Turn}"/>
                     </StackPanel> 
                 </Grid> 
                 <Grid Grid.Column="1">
                     <Grid RowDefinitions="15*, 5*">
-                        <Grid Grid.Row="0" RowDefinitions="Auto, Auto" ColumnDefinitions="Auto, Auto">
-                            <Grid Grid.Row="0" Grid.Column="0">
+                        <Grid Grid.Row="0" RowDefinitions="Auto, Auto, Auto, Auto">
+                            <Grid Grid.Row="0">
                                 <ListBox ItemsSource="{Binding Player.DeckLists[0]}">
+                                    <ListBox.ItemsPanel>
+                                        <ItemsPanelTemplate>
+                                            <StackPanel Orientation="Horizontal"/>
+                                        </ItemsPanelTemplate>
+                                    </ListBox.ItemsPanel>
                                     <ListBox.ItemTemplate>
                                         <DataTemplate>
-                                            <StackPanel>
+                                            <StackPanel Classes="Card">
                                                 <TextBlock Text="Number of cards:"/>
                                                 <TextBlock Text="{Binding Number}" Classes="CardText"/>
                                                 <TextBlock Text="Points of cards:"/>
@@ -151,50 +164,59 @@
                                     </ListBox.ItemTemplate>
                                 </ListBox>    
                             </Grid>
-                            <Grid Grid.Row="0" Grid.Column="1">
+                            <Grid Grid.Row="1">
                                 <ListBox ItemsSource="{Binding Player.DeckLists[1]}">
+                                    <ListBox.ItemsPanel>
+                                        <ItemsPanelTemplate>
+                                            <StackPanel Orientation="Horizontal"/>
+                                        </ItemsPanelTemplate>
+                                    </ListBox.ItemsPanel>
                                     <ListBox.ItemTemplate>
                                         <DataTemplate>
-                                            <Button Classes="Card">
-                                                <StackPanel>
-                                                    <TextBlock Text="Number of cards:"/>
-                                                    <TextBlock Text="{Binding Number}" Classes="CardText"/>
-                                                    <TextBlock Text="Points of cards:"/>
-                                                    <TextBlock Text="{Binding Points}" Classes="CardText"/>
-                                                </StackPanel>
-                                            </Button>
+                                            <StackPanel Classes="Card">
+                                                <TextBlock Text="Number of cards:"/>
+                                                <TextBlock Text="{Binding Number}" Classes="CardText"/>
+                                                <TextBlock Text="Points of cards:"/>
+                                                <TextBlock Text="{Binding Points}" Classes="CardText"/>
+                                            </StackPanel>
                                         </DataTemplate>
                                     </ListBox.ItemTemplate>
                                 </ListBox>    
                             </Grid>
-                            <Grid Grid.Row="1" Grid.Column="0">
+                            <Grid Grid.Row="2">
                                 <ListBox ItemsSource="{Binding Player.DeckLists[2]}">
+                                    <ListBox.ItemsPanel>
+                                        <ItemsPanelTemplate>
+                                            <StackPanel Orientation="Horizontal"/>
+                                        </ItemsPanelTemplate>
+                                    </ListBox.ItemsPanel>
                                     <ListBox.ItemTemplate>
                                         <DataTemplate>
-                                            <Button Classes="Card">
-                                                <StackPanel>
-                                                    <TextBlock Text="Number of cards:"/>
-                                                    <TextBlock Text="{Binding Number}" Classes="CardText"/>
-                                                    <TextBlock Text="Points of cards:"/>
-                                                    <TextBlock Text="{Binding Points}" Classes="CardText"/>
-                                                </StackPanel>
-                                            </Button>
+                                            <StackPanel Classes="Card">
+                                                <TextBlock Text="Number of cards:"/>
+                                                <TextBlock Text="{Binding Number}" Classes="CardText"/>
+                                                <TextBlock Text="Points of cards:"/>
+                                                <TextBlock Text="{Binding Points}" Classes="CardText"/>
+                                            </StackPanel>
                                         </DataTemplate>
                                     </ListBox.ItemTemplate>
                                 </ListBox>    
                             </Grid>
-                            <Grid Grid.Row="1" Grid.Column="1">
+                            <Grid Grid.Row="3">
                                 <ListBox ItemsSource="{Binding Player.DeckLists[3]}">
+                                    <ListBox.ItemsPanel>
+                                        <ItemsPanelTemplate>
+                                            <StackPanel Orientation="Horizontal"/>
+                                        </ItemsPanelTemplate>
+                                    </ListBox.ItemsPanel>
                                     <ListBox.ItemTemplate>
                                         <DataTemplate>
-                                            <Button Classes="Card">
-                                                <StackPanel>
-                                                    <TextBlock Text="Number of cards:"/>
-                                                    <TextBlock Text="{Binding Number}" Classes="CardText"/>
-                                                    <TextBlock Text="Points of cards:"/>
-                                                    <TextBlock Text="{Binding Points}" Classes="CardText"/>
-                                                </StackPanel>
-                                            </Button>
+                                            <StackPanel Classes="Card">
+                                                <TextBlock Text="Number of cards:"/>
+                                                <TextBlock Text="{Binding Number}" Classes="CardText"/>
+                                                <TextBlock Text="Points of cards:"/>
+                                                <TextBlock Text="{Binding Points}" Classes="CardText"/>
+                                            </StackPanel>
                                         </DataTemplate>
                                     </ListBox.ItemTemplate>
                                 </ListBox>    
@@ -210,7 +232,8 @@
                                 <ListBox.ItemTemplate>
                                     <DataTemplate>
                                         <Button Classes="Card" CommandParameter="{Binding Id}"
-                                                Command="{Binding $parent[Grid].((vm:MainWindowViewModel)DataContext).SelectCardCommand}">
+                                                Command="{Binding $parent[Grid].((vm:MainWindowViewModel)DataContext).SelectCardCommand}"
+                                                IsEnabled="{Binding $parent[Grid].((vm:MainWindowViewModel)DataContext).Player.Turn}">
                                             <StackPanel>
                                                 <TextBlock Text="Number of cards:"/>
                                                 <TextBlock Text="{Binding Number}" Classes="CardText"/>
@@ -226,5 +249,12 @@
                 </Grid> 
             </Grid> 
         </Grid> 
+        
+        <Grid x:Name="EndOfGame" IsVisible="{Binding Player.GameIsOver}">
+            <StackPanel Background="Cyan" VerticalAlignment="Center" HorizontalAlignment="Center">
+                <TextBlock Foreground="Brown" FontSize="100" Text="Looser:"/>
+                <TextBlock Foreground="Brown" FontSize="100" Text="{Binding Player.LoserName}"/>
+            </StackPanel>
+        </Grid>
     </Grid>
 </Window>

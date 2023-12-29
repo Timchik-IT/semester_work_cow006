@@ -257,4 +257,10 @@ public class ConnectedClient
         var packetTurn = XPacketConverter.Serialize(XPacketType.NewMove, new XPacketNewMove()).ToPacket();
         QueuePacketSend(packetTurn);
     }
+
+    public void EndOfGame(string loserName)
+    {
+        var packet = XPacketConverter.Serialize(XPacketType.Loser, new XPacketLoser(loserName)).ToPacket();
+        QueuePacketSend(packet);
+    }
 }

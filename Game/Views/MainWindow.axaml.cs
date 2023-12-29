@@ -34,7 +34,7 @@ public partial class MainWindow : Window
     {
         Close();
     }
-
+    
     private void PlayerJoin_OnClick(object? sender, RoutedEventArgs e)
     {
         NickInput.IsVisible = false;

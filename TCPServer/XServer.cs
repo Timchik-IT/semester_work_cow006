@@ -23,6 +23,7 @@ internal class XServer
     private static Stack<byte> _cards = new();
     
     private int _activePlayerId;
+    private string? _looserName;
 
     public Task StartAsync()
     {
@@ -116,7 +117,7 @@ internal class XServer
         Console.WriteLine("Cards ready!");
     }
 
-    private void SendPackOfCards(byte[] cardsId)
+    private void SendPackOfCards(List<byte> cardsId)
     {
         foreach (var client in ConnectedClients)
             foreach (var cardId in cardsId)
@@ -125,8 +126,6 @@ internal class XServer
 
     public void StartGame()
     {
-        InitializeGame();
-
         while (true)
         {
             if (!ConnectedClients.All(x => x.IsReady))
@@ -142,16 +141,16 @@ internal class XServer
         
         while (!_isGameOver)
         {
-            var startedCards = new[]
-            {
-                _cards.Pop(),
-                _cards.Pop(),
-                _cards.Pop(),
-                _cards.Pop()
-            };
-            SendPackOfCards(startedCards);
-            Console.WriteLine("Cards for play deck are ready");
+            InitializeGame();
             
+            var cardForDeck = new List<byte>();
+            for (var j = 0; j < 4; j++)
+            {
+                var card = _cards.Pop();
+                cardForDeck.Add(card);
+                Console.WriteLine($"card id for deck - {card}");
+            }
+            SendPackOfCards(cardForDeck);
             
             foreach (var client in ConnectedClients)
             {
@@ -163,32 +162,52 @@ internal class XServer
             
             for (var i = 0; i < 10; i++)
             {
+                var selectedCards = new List<byte>();
+                
                 for (var activePlayerId = 0; activePlayerId < 4; activePlayerId++)
                 {
                     var activePlayer = ConnectedClients[activePlayerId];
                     activePlayer.StartTurn();
                     Console.WriteLine($"player {activePlayer.Name} ({activePlayer.Id}) is moving now");
-
+                    
                     while (true)
                     {
                         if (!activePlayer.Turn)
                             break;
                     }
-
+                    
+                    selectedCards.Add(activePlayer.SelectedCardId);
                     Console.WriteLine($"Player {activePlayer.Name} ({activePlayer.Id}) has finished his turn");
                 }
-
-                var selectedCards = ConnectedClients.Select(x => x.SelectedCardId).ToList();
-                selectedCards.Sort();
-                SendPackOfCards(selectedCards.ToArray());
+                
+                SendPackOfCards(selectedCards);
             }
-
-            foreach (var client in ConnectedClients)
-            {
-                if (client.Points < 66) continue;
-                _isGameOver = true;
-                Console.WriteLine("Game over");
-            }
+            
+            CheckEndOfGame();
         }
+    }
+    
+    private void CheckEndOfGame()
+    {
+        var losersList = new List<byte>();
+        
+        foreach (var client in ConnectedClients.Where(client => client.Points > 66))
+        {
+            losersList.Add(client.Id);
+            _isGameOver = true;
+            Console.WriteLine("Game over");
+        }
+        
+        if (losersList.Count == 0)
+            return;
+        
+        foreach (var client in ConnectedClients.Where(client => losersList.Contains(client.Id)).Where(client => _maxPoint < client.Points))
+        {
+            _maxPoint = client.Points;
+            _looserName = client.Name;
+        }
+        
+        foreach (var client in ConnectedClients)
+            client.EndOfGame(_looserName);
     }
 }

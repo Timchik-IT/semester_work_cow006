@@ -8,5 +8,6 @@ public enum XPacketType
     UpdatedPlayerProperty,
     Card,
     DeckCard,
+    Loser,
     NewMove
 }
