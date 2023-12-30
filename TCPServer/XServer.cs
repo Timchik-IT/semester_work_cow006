@@ -119,9 +119,20 @@ internal class XServer
 
     private void SendPackOfCards(List<byte> cardsId)
     {
+        cardsId.Sort();
         foreach (var client in ConnectedClients)
             foreach (var cardId in cardsId)
+            {
                 client.SendDeckCard(cardId);
+                Thread.Sleep(10);
+            }
+    }
+    
+    private void SendStarterPackOfCards(List<byte> cardForDeck)
+    {
+        foreach (var client in ConnectedClients)
+            foreach (var cardId in cardForDeck)
+                client.SendStarterDeckCard(cardId);
     }
 
     public void StartGame()
@@ -150,7 +161,9 @@ internal class XServer
                 cardForDeck.Add(card);
                 Console.WriteLine($"card id for deck - {card}");
             }
-            SendPackOfCards(cardForDeck);
+            
+            SendStarterPackOfCards(cardForDeck);
+            Console.WriteLine("Send starter cards");
             
             foreach (var client in ConnectedClients)
             {
@@ -168,7 +181,7 @@ internal class XServer
                 {
                     var activePlayer = ConnectedClients[activePlayerId];
                     activePlayer.StartTurn();
-                    Console.WriteLine($"player {activePlayer.Name} ({activePlayer.Id}) is moving now");
+                    Console.WriteLine($"Player {activePlayer.Name} ({activePlayer.Id}) is moving now");
                     
                     while (true)
                     {
@@ -177,10 +190,12 @@ internal class XServer
                     }
                     
                     selectedCards.Add(activePlayer.SelectedCardId);
+                    Console.WriteLine($"ПОЛУЧЕНА КАРТА - {activePlayer.SelectedCardId + 1}");
                     Console.WriteLine($"Player {activePlayer.Name} ({activePlayer.Id}) has finished his turn");
                 }
                 
                 SendPackOfCards(selectedCards);
+                Thread.Sleep(1000);
             }
             
             CheckEndOfGame();

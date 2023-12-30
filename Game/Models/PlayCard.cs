@@ -13,14 +13,13 @@ public class PlayCard
     {
         var numOfCard = id + 1;
 
-        if (numOfCard % 5 == 0)
-        {
-            if (numOfCard % 10 == 0)
-                return 3;
-            return numOfCard % 11 == 0 ? (byte)7 : (byte)2;
-        }
+        if (numOfCard % 5 != 0) return numOfCard % 11 == 0 ? (byte)5 : (byte)1;
+        
+        if (numOfCard % 10 == 0)
+            return 3;
+        
+        return numOfCard % 11 == 0 ? (byte)7 : (byte)2;
 
-        return numOfCard % 11 == 0 ? (byte)5 : (byte)1;
     }
     
     public byte Number { get; }

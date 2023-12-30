@@ -10,6 +10,7 @@ using System.Runtime.CompilerServices;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
+using DynamicData;
 using XProtocol;
 using XProtocol.Serializer;
 using XProtocol.XPackets;
@@ -261,7 +262,6 @@ public sealed class Player : INotifyPropertyChanged
                 break;
             case XPacketType.UpdatedPlayerProperty:
                 ProcessUpdatingProperty(packet);
-                Console.WriteLine("Пакет обновления");
                 break;
             case XPacketType.PlayersList:
                 ProcessGettingPlayers(packet);
@@ -274,6 +274,9 @@ public sealed class Player : INotifyPropertyChanged
             case XPacketType.DeckCard:
                 ProcessUpdatingDeckLists(packet);
                 Console.WriteLine("Пакет карты для стола");
+                break;
+            case XPacketType.CreateDeckListsCard:
+                CreateCardLists(packet);
                 break;
             case XPacketType.NewMove:
                 ProcessStartingTurn(packet);
@@ -304,7 +307,7 @@ public sealed class Player : INotifyPropertyChanged
     {
         var packetCard = XPacketConverter.Deserialize<XPacketCard>(packet);
         UpdateDeckLists(packetCard.CardId);
-        Console.WriteLine($"Обработана карта для стола - {packetCard.CardId}");
+        Console.WriteLine($"ПОЛУЧЕНА КАРТА - {packetCard.CardId + 1}");
     }
     
     private void ProcessGettingCard(XPacket packet)
@@ -404,75 +407,97 @@ public sealed class Player : INotifyPropertyChanged
             Thread.Sleep(100);
         }
     }
+
+    private void CreateCardLists(XPacket packet)
+    {
+        var cardId = XPacketConverter.Deserialize<XPacketCard>(packet).CardId;
+        
+        for (var index = 0; index < DeckLists.Count; index++)
+        {
+            var list = DeckLists[index];
+            if (list.Count != 0) continue;
+            _deckLists[index].Add(_playCards[cardId]);
+            return;
+        }
+    }
     
     private void UpdateDeckLists(byte cardId)
     {
-        var card = _playCards[cardId];
-        foreach (var list in DeckLists.Where(list => list.Count == 0))
+        var idListForAdd = new List<int>();
+        var idListForRebuild = new List<int>();
+        for (var index = 0; index < DeckLists.Count; index++)
         {
-            list.Add(card);
-            return;
-        }
-        
-        var count = 0;
-        var listI = new List<int>();
-        for(var i = 0; i < 4; i++)
-        {
-            if (DeckLists[i].Last().Number < card.Number)
-                count++;
+            var cardList = DeckLists[index];
+            if (cardList.Last().Number > cardId + 1)
+                idListForRebuild.Add(index);
             else
-                listI.Add(i);
+                idListForAdd.Add(index);
         }
-        
-        if (count == 4)
+
+        if (idListForRebuild.Count == 4)
         {
+            var minPoints = 100;
             var listId = 0;
-            var minPoints = 999;
+            
             for (var index = 0; index < DeckLists.Count; index++)
             {
                 var list = DeckLists[index];
-                var currentPoints = list.Aggregate(0, (current, currentCard) => current + currentCard.Points);
+                var currentPoints = 0;
+                foreach (var card in list)
+                {
+                    currentPoints += card.Points;
+                }
                 if (currentPoints >= minPoints) continue;
-                
                 minPoints = currentPoints;
                 listId = index;
             }
-            DeckLists[listId] = new ObservableCollection<PlayCard> { card };
+
+            _deckLists[listId] = new ObservableCollection<PlayCard>() { _playCards[cardId] };
             
-            if (!PlayerCards.Contains(card)) return;
-            PlayerCards.Remove(card);
-            Points += (byte)minPoints;
+            foreach (var card in PlayerCards)
+            {
+                if (card.Id == cardId)
+                    _points += (byte)minPoints;
+                SendPoints();
+            }
         }
         else
         {
-            var temp = 105;
-            var listId = 0;
-            var updatedList = new ObservableCollection<PlayCard>();
-            foreach (var i in listI)
-            {
-                var diff = card.Number - DeckLists[i].Last().Number;
-                if (diff >= temp && diff > 0) continue;
-                temp = diff;
-                listId = i;
-                updatedList = DeckLists[listId];
-            }
+            var listId = idListForAdd.First();
+            var minTemp = 105;
             
-            if (updatedList.Count == 5)
+            foreach (var id in idListForAdd)
             {
-                if (SelectedCard.Id == cardId)
-                {
-                    foreach (var listCard in updatedList)
-                    {
-                        Points += listCard.Points;
-                    }
-                }
-
-                updatedList = new ObservableCollection<PlayCard>();
+                var list = DeckLists[id];
+                var temp = cardId - list.Last().Id;
+                if (temp >= minTemp) continue;
+                minTemp = temp;
+                listId = id;
             }
-        
-            updatedList.Add(card);
-            _deckLists[listId] = updatedList;   
+
+            if (DeckLists[listId].Count == 5)
+            {
+                var points = DeckLists[listId].Aggregate(0, (current, card) => current + card.Points);
+                DeckLists[listId] = new ObservableCollection<PlayCard>() { _playCards[cardId] };
+                foreach (var card in PlayerCards)
+                {
+                    if (card.Id == cardId)
+                        _points += (byte)points;
+                    SendPoints();
+                }
+            }
+            else
+            {
+                _deckLists[listId].Add(_playCards[cardId]);
+            }
         }
+    }
+
+    private void SendPoints()
+    {
+        var pointPacket = XPacketConverter.Serialize(XPacketType.Points, new XPacketPoints(Points)).ToPacket();
+        QueuePacketSend(pointPacket);
+        Console.WriteLine("Sending Points");
     }
     
     internal void SelectCard(byte idCard)

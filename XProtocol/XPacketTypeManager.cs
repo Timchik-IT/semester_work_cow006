@@ -12,7 +12,9 @@ public static class XPacketTypeManager
         RegisterType(XPacketType.NewMove, 4, 0);
         RegisterType(XPacketType.Card, 5, 0);
         RegisterType(XPacketType.DeckCard, 5, 1);
+        RegisterType(XPacketType.CreateDeckListsCard, 5, 2);
         RegisterType(XPacketType.Loser, 6, 0);
+        RegisterType(XPacketType.Points, 7, 0);
     }
 
     private static void RegisterType(XPacketType type, byte btype, byte bsubtype)

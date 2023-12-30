@@ -146,6 +146,9 @@ public class ConnectedClient
             case XPacketType.DeckCard:
                 ProcessSettingSelectedCard(packet);
                 break;
+            case XPacketType.Points:
+                ProcessUpdatingPoints(packet);
+                break;
             case XPacketType.Unknown:
                 break;
             case XPacketType.PlayersList:
@@ -154,7 +157,14 @@ public class ConnectedClient
                 throw new ArgumentException("Получен неизвестный пакет");
         }
     }
-    
+
+    private void ProcessUpdatingPoints(XPacket packet)
+    {
+        var pointsPacket = XPacketConverter.Deserialize<XPacketPoints>(packet);
+        Points = pointsPacket.Points;
+        Console.WriteLine($"Points for player {Name} updated");
+    }
+
     private void ProcessSettingSelectedCard(XPacket packet)
     {
         var packetCard = XPacketConverter.Deserialize<XPacketCard>(packet);
@@ -170,6 +180,14 @@ public class ConnectedClient
             case "Name":
             {
                 Name = Convert.ChangeType(packetProperty.PropertyValue, packetProperty.PropertyType!) as string;
+                break;
+            }
+            case "SelectedCard":
+            {
+                break;
+            }
+            case "Points":
+            {
                 break;
             }
             default:
@@ -241,7 +259,13 @@ public class ConnectedClient
     {
         var packet = XPacketConverter.Serialize(XPacketType.DeckCard, new XPacketCard(cardId)).ToPacket();
         QueuePacketSend(packet);
-        Console.WriteLine("send packet with card gor deck");
+    }
+    
+    public void SendStarterDeckCard(byte cardId)
+    {
+        var packet = XPacketConverter.Serialize(XPacketType.CreateDeckListsCard, new XPacketCard(cardId)).ToPacket();
+        QueuePacketSend(packet);
+        Console.WriteLine();
     }
     
     public void GiveCard(byte cardId)

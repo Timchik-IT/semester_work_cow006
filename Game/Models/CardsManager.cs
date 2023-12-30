@@ -13,7 +13,7 @@ public static class CardsManager
         
         for (byte id = 0; id < 104; id++)
         {
-            playCards.Add(id, new PlayCard((byte)id+1));
+            playCards.Add(id, new PlayCard(id));
         }
 
         return playCards;
