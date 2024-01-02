@@ -6,6 +6,7 @@ public enum XPacketType
     Connection,
     PlayersList,
     UpdatedPlayerProperty,
+    ResetDeck,
     Card,
     DeckCard,
     CreateDeckListsCard,

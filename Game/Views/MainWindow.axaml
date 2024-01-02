@@ -136,8 +136,6 @@
                         <TextBlock Text="{Binding Player.Id}" /> 
                         <TextBlock Foreground="White"> Ваш ник:</TextBlock> 
                         <TextBlock Text="{Binding Player.Name}" /> 
-                        <TextBlock Foreground="White"> Ваши очки:</TextBlock> 
-                        <TextBlock Text="{Binding Player.Points}" /> 
                         <TextBlock Foreground="Firebrick" Text="ТВОЙ ХОД" 
                                    IsVisible="{Binding Player.Turn}"/>
                     </StackPanel> 

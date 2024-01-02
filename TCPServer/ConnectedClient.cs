@@ -26,7 +26,7 @@ public class ConnectedClient
     private string? _name;
     private bool _turn;
     private string? _color;
-    private byte _points;
+    private int _points;
     private byte _selectedCardId;
 
     private List<byte>? PlayerCards { get; }
@@ -72,12 +72,12 @@ public class ConnectedClient
         }
     }
     
-    public byte Points
+    public int Points
     {
         get => _points;
         set
         {
-            _points = Points;
+            _points = value;
             OnPropertyChanged();
         }
     }
@@ -162,7 +162,7 @@ public class ConnectedClient
     {
         var pointsPacket = XPacketConverter.Deserialize<XPacketPoints>(packet);
         Points = pointsPacket.Points;
-        Console.WriteLine($"Points for player {Name} updated");
+        Console.WriteLine($"Points for player {Name} updated -- {Points}");
     }
 
     private void ProcessSettingSelectedCard(XPacket packet)
@@ -258,6 +258,12 @@ public class ConnectedClient
     public void SendDeckCard(byte cardId)
     {
         var packet = XPacketConverter.Serialize(XPacketType.DeckCard, new XPacketCard(cardId)).ToPacket();
+        QueuePacketSend(packet);
+    }
+
+    public void ResetDecks()
+    {
+        var packet = XPacketConverter.Serialize(XPacketType.ResetDeck, new XPacketNewMove()).ToPacket();
         QueuePacketSend(packet);
     }
     

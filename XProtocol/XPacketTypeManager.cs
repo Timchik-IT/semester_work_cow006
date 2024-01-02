@@ -13,6 +13,7 @@ public static class XPacketTypeManager
         RegisterType(XPacketType.Card, 5, 0);
         RegisterType(XPacketType.DeckCard, 5, 1);
         RegisterType(XPacketType.CreateDeckListsCard, 5, 2);
+        RegisterType(XPacketType.ResetDeck, 5, 3);
         RegisterType(XPacketType.Loser, 6, 0);
         RegisterType(XPacketType.Points, 7, 0);
     }

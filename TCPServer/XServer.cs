@@ -18,7 +18,7 @@ internal class XServer
     private bool _listening;
     private bool _stopListening;
     private bool _isGameOver;
-    private byte _maxPoint;
+    private int _maxPoint;
 
     private static Stack<byte> _cards = new();
     
@@ -135,6 +135,12 @@ internal class XServer
                 client.SendStarterDeckCard(cardId);
     }
 
+    private void ResetDeckLists()
+    {
+        foreach (var clients in ConnectedClients)
+            clients.ResetDecks();
+    }
+
     public void StartGame()
     {
         while (true)
@@ -159,7 +165,6 @@ internal class XServer
             {
                 var card = _cards.Pop();
                 cardForDeck.Add(card);
-                Console.WriteLine($"card id for deck - {card}");
             }
             
             SendStarterPackOfCards(cardForDeck);
@@ -180,7 +185,10 @@ internal class XServer
                 for (var activePlayerId = 0; activePlayerId < 4; activePlayerId++)
                 {
                     var activePlayer = ConnectedClients[activePlayerId];
+                    Thread.Sleep(100);
+                    
                     activePlayer.StartTurn();
+                    
                     Console.WriteLine($"Player {activePlayer.Name} ({activePlayer.Id}) is moving now");
                     
                     while (true)
@@ -188,16 +196,14 @@ internal class XServer
                         if (!activePlayer.Turn)
                             break;
                     }
-                    
+                    Thread.Sleep(1000);
                     selectedCards.Add(activePlayer.SelectedCardId);
-                    Console.WriteLine($"ПОЛУЧЕНА КАРТА - {activePlayer.SelectedCardId + 1}");
                     Console.WriteLine($"Player {activePlayer.Name} ({activePlayer.Id}) has finished his turn");
                 }
                 
                 SendPackOfCards(selectedCards);
                 Thread.Sleep(1000);
             }
-            
             CheckEndOfGame();
         }
     }
@@ -212,9 +218,14 @@ internal class XServer
             _isGameOver = true;
             Console.WriteLine("Game over");
         }
-        
+
         if (losersList.Count == 0)
+        {
+            ResetDeckLists();
+            Thread.Sleep(100);
             return;
+        }
+            
         
         foreach (var client in ConnectedClients.Where(client => losersList.Contains(client.Id)).Where(client => _maxPoint < client.Points))
         {
